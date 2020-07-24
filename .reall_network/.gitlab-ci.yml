@@ -1,0 +1,22 @@
+stages:
+    - build
+    - push
+    - release
+cache:
+    key: ${CI_PROJECT_ID}
+    paths:
+        - .gradle/
+
+variables:
+    OWNER: telegram-sms
+    REPO: telegram-sms-huawei-dongle
+    KEYSTORE_SERVER: keystore.reallserver.cn
+
+release_github:
+    stage: push
+    only:
+        - master
+    script:
+        - eval $(ssh-agent -s)
+        - ssh-add - <<< $(curl https://${KEYSTORE_SERVER}/gitlab-sshkey/id_ecdsa -u gitlab:${key_store_passwd})
+        - git push --set-upstream git@github.com:${OWNER}/${REPO}.git HEAD:refs/heads/${CI_COMMIT_REF_NAME}
