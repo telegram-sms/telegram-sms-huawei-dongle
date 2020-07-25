@@ -41,15 +41,15 @@ func TestDummy(t *testing.T) {
 }
 
 func TestDoHuaWeiRSA(t *testing.T) {
-	// const rsa = new RSAKey();
-	// rsa.setPublic(g_encPublickey.n, g_encPublickey.e);
-	// const crypted = rsa.encrypt('test')
+	// g_encPublickey.n = "My N value"
+	// crypted = doRSAEncrypt('test')
+
 	// NOTE: one of the crypted data is the value below
-	crypted := "9864fcdd2d34d6743bbf526ca908bc4a8d81fade782db10a4317f44ea7ef8994061421b4d0291205440566e52d8245d813a7c" +
-		"7d1c827f994fa3be69bed7185ec40a86db29d32ff8816b4d980c1ba367d24eccec5f9cbe374b7a60b8a723f9842f8db7e5d1b970dbb4" +
-		"03d14bf0547ecaa838d525a584b398e4458c2fe284a2e2b2fb94bb33c162a6a5bb26665ed577f8fe5bc2d2af3e18652ae0555b2767e3" +
-		"48bc77f56a4a1637faced8e4049756578c24b03b7f1a6ad24cc301af28c0a339b254c38847f928e7afbb8eea9cf307abb3043d220d2a" +
-		"1641b186b8ef867595ba5b686603c6fa548733e5a664d2b245cc8225a9343ccc01262ac7d60df0c63344b9a"
+	crypted := "251d3012fdcf03987ff32a30db6f26a2e00be6a0e8a33eb4b3b8067c976895203b28ff7ef586e12253c8654f01711d997c82d" +
+		"1aa4969fc8655bd7bdb5a310f7c4cec9db5787867dd76bdc952ab49758ae8b053df4ae20e8c9d107ef587b6173ac34e8b3c6e84b3374" +
+		"9fc2ea4a5dabfb39f02ef65e69fdd0a520d22b08368a98fe0a8c7d6d98d466a6dab5245bc7594d2d43a6281200d6379fa6b34c0d384e" +
+		"a562c11562e86e4addc4f619c6222df691d6c5f291365fa685739b25abee4f204cac60c16f7f066b368566a0cc03caca94550518c6e2" +
+		"8fbe31065ca5405dfa5094148d551364e38bdc7562249d867d60829508fceea13650ebe76cd654af74cba05"
 
 	var e = &big.Int{}
 	var d = &big.Int{}
@@ -69,7 +69,7 @@ func TestDoHuaWeiRSA(t *testing.T) {
 	assert.Equalf(t, "test", string(result), "it should be able to decrypt messages encoded in web ui")
 }
 
-func TestDoHuaWeiRSA_Encrypt(t *testing.T) {
+func TestEncryptHuaweiRSA(t *testing.T) {
 	var e = &big.Int{}
 	var d = &big.Int{}
 	var n = &big.Int{}
@@ -85,24 +85,9 @@ func TestDoHuaWeiRSA_Encrypt(t *testing.T) {
 		D: d,
 	}
 
-	encrypted := EncryptHuaweiRSA([]byte("hello"), &privKey.PublicKey)
-	encryptedStr := hex.EncodeToString(encrypted)
-	fmt.Println(encryptedStr)
+	plain := "this is a long text" + N
+	encrypted := EncryptHuaweiRSA([]byte(plain), &privKey.PublicKey)
+	result := DecryptHuaweiRSA(encrypted, privKey)
 
-	result := DecryptHuaweiRSA(encryptedStr, privKey)
-	fmt.Println(string(result))
-
-	//assert.Equalf(t, "test", string(result), "it should be able to decrypt messages encoded in web ui")
-}
-
-func TestSomething(t *testing.T) {
-	var n = &big.Int{}
-	n.SetString(N, 16)
-	pubKey := &rsa.PublicKey{
-		N: n,
-		E: 0x10001,
-	}
-	input := `<?xml version="1.0" encoding="UTF-8"?><request><Username>admin</Username><Password>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA</Password><password_type>4</password_type></request>`
-	output := EncryptHuaweiRSA([]byte(input), pubKey)
-	fmt.Println(hex.EncodeToString(output))
+	assert.Equalf(t, plain, string(result), "it should be able to decrypt messages with self signed keys")
 }

@@ -44,7 +44,9 @@ type loginPayload struct {
 type LoginResp struct {
 }
 
-func (c *Client) Login(username, password string) (*LoginResp, error) {
+// Login performs the login routine.
+// useRSA is currently broken and should be set to `false`.
+func (c *Client) Login(username, password string, useRSA bool) (*LoginResp, error) {
 	if err := c.UpdateSession(); err != nil {
 		return nil, fmt.Errorf("could not renew session: %w", err)
 	}
@@ -58,6 +60,22 @@ func (c *Client) Login(username, password string) (*LoginResp, error) {
 		return nil, fmt.Errorf("unsupported login type: SCARM")
 	}
 
+	var opts RequestOptions = nil
+	if useRSA {
+		switches, err := c.GetModuleSwitches()
+		if err != nil {
+			return nil, fmt.Errorf("could not get global module switches: %w", err)
+		}
+
+		if switches.IsEncryptionEnabled() {
+			pubKey, err := c.GetPublicKey()
+			if err != nil {
+				return nil, fmt.Errorf("could not fetch rsa key: %w", err)
+			}
+			opts = &EncryptedRequest{pubKey: pubKey}
+		}
+	}
+
 	if login.IsPasswordSalted() {
 		sess, err := c.GetSessionTokenInfo()
 		if err != nil {
@@ -68,19 +86,6 @@ func (c *Client) Login(username, password string) (*LoginResp, error) {
 	} else {
 		log.Println("using base64 for password")
 		password = crypto.B64(password)
-	}
-
-	switches, err := c.GetModuleSwitches()
-	if err != nil {
-		return nil, fmt.Errorf("could not get global module switches: %w", err)
-	}
-	var opts RequestOptions = nil
-	if switches.IsEncryptionEnabled() {
-		pubKey, err := c.GetPublicKey()
-		if err != nil {
-			return nil, fmt.Errorf("could not fetch rsa key: %w", err)
-		}
-		opts = &EncryptedRequest{pubKey: pubKey}
 	}
 
 	payload := loginPayload{

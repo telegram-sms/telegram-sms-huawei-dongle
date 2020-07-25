@@ -6,6 +6,7 @@ import (
 	"crypto/rsa"
 	"encoding/base64"
 	"encoding/hex"
+	"fmt"
 	"log"
 	"math/big"
 )
@@ -14,6 +15,11 @@ func pkcs1Type2(src []byte, blockBytes int) []byte {
 	expectedRandom := blockBytes - len(src) - 3
 	random := make([]byte, expectedRandom)
 	_, _ = rand.Read(random)
+	for i := range random {
+		if random[i] == 0 {
+			random[i] = 0xFF
+		}
+	}
 
 	padded := bytes.NewBuffer(nil)
 	padded.Grow(blockBytes)
@@ -33,6 +39,8 @@ func unPKCS1Type2(src []byte) []byte {
 		return nil
 	}
 
+	fmt.Printf("first 2 bytes: %02x %02x\n", src[0], src[1])
+
 	for i := size - 1; i > 0; i-- {
 		if src[i] == 0 {
 			return src[i+1 : size]
@@ -42,10 +50,10 @@ func unPKCS1Type2(src []byte) []byte {
 	return nil
 }
 
-func EncryptHuaweiRSA(input []byte, pubKey *rsa.PublicKey) []byte {
+func EncryptHuaweiRSA(input []byte, pubKey *rsa.PublicKey) string {
 	if len(input) == 0 || pubKey == nil {
 		log.Fatal("could not do rsa with empty input or empty key")
-		return nil
+		return ""
 	}
 
 	result := bytes.NewBuffer(nil)
@@ -68,7 +76,7 @@ func EncryptHuaweiRSA(input []byte, pubKey *rsa.PublicKey) []byte {
 		result.Write(encrypted.Bytes())
 	}
 
-	return result.Bytes()
+	return hex.EncodeToString(result.Bytes())
 }
 
 func DecryptHuaweiRSA(encrypted string, privKey *rsa.PrivateKey) []byte {
@@ -76,9 +84,19 @@ func DecryptHuaweiRSA(encrypted string, privKey *rsa.PrivateKey) []byte {
 
 	c := &big.Int{}
 	m := &big.Int{}
+	buffer := bytes.NewBuffer(nil)
 
-	c.SetBytes(blob)
-	m.Exp(c, privKey.D, privKey.N)
+	size := len(blob)
 
-	return unPKCS1Type2(m.Bytes())
+	for i := 0; i < size; i += 256 {
+		c.SetBytes(blob[i : i+256])
+		m.Exp(c, privKey.D, privKey.N)
+		fmt.Println(hex.EncodeToString(m.Bytes()))
+		unpadded := unPKCS1Type2(m.Bytes())
+		//fmt.Println(string(unpadded))
+		buffer.Write(unpadded)
+	}
+
+	result, _ := base64.StdEncoding.DecodeString(buffer.String())
+	return result
 }

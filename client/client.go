@@ -41,7 +41,8 @@ func (c *Client) Request(path string, body []byte, opt RequestOptions) ([]byte, 
 		return nil, fmt.Errorf("could not create request: %w", err)
 	}
 	req.Header.Set("Host", c.Host)
-	req.Header.Set("__RequestVerificationToken", c.Token)
+	req.Header.Set("Origin", c.BaseURL)
+	req.Header["__RequestVerificationToken"] = []string{c.Token}
 	req.Header.Set("X-Requested-With", "XMLHttpRequest")
 	req.Header.Set("Referer", c.url("/html/home.html"))
 	if opt != nil {

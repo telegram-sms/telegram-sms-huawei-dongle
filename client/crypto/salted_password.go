@@ -19,7 +19,10 @@ func B64(text string) string {
 	return base64.StdEncoding.EncodeToString(blob)
 }
 
+func b64_sha256(text string) string {
+	return B64(SHA256(text))
+}
+
 func EncodeSaltedPassword(username, password, token string) string {
-	pass := B64(SHA256(password))
-	return B64(SHA256(username + pass + token))
+	return b64_sha256(username + b64_sha256(password) + token)
 }
