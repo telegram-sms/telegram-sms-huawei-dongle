@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/xml"
 	"fmt"
+	"github.com/telegram-sms/telegram-sms-huawei-dongle/client/fifo"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -15,7 +16,7 @@ type Client struct {
 	BaseURL string
 	client  http.Client
 	Host    string
-	Token   string
+	Tokens  *fifo.TokenQueue
 }
 
 func (c *Client) url(path string) string {
@@ -25,11 +26,13 @@ func (c *Client) url(path string) string {
 var xmlHeader = []byte(`<?xml version="1.0" encoding="UTF-8"?>`)
 
 func (c *Client) Request(path string, body []byte, opt RequestOptions) ([]byte, error) {
+	token := ""
 	action := "GET"
 	if body != nil {
 		action = "POST"
 
 		body = append(xmlHeader, body...)
+		token = c.Tokens.Consume()
 
 		if opt != nil {
 			body = opt.TransformBody(c, body)
@@ -42,7 +45,9 @@ func (c *Client) Request(path string, body []byte, opt RequestOptions) ([]byte, 
 	}
 	req.Header.Set("Host", c.Host)
 	req.Header.Set("Origin", c.BaseURL)
-	req.Header["__RequestVerificationToken"] = []string{c.Token}
+	if token != "" {
+		req.Header["__RequestVerificationToken"] = []string{token}
+	}
 	req.Header.Set("X-Requested-With", "XMLHttpRequest")
 	req.Header.Set("Referer", c.url("/html/home.html"))
 	if opt != nil {
@@ -56,6 +61,10 @@ func (c *Client) Request(path string, body []byte, opt RequestOptions) ([]byte, 
 	if err != nil {
 		err = resp.Body.Close()
 	}
+
+	c.Tokens.Add(resp.Header.Get("__RequestVerificationTokenOne"))
+	c.Tokens.Add(resp.Header.Get("__RequestVerificationTokenTwo"))
+	c.Tokens.Add(resp.Header.Get("__RequestVerificationToken"))
 
 	return result, err
 }
@@ -102,6 +111,9 @@ func (c *Client) InitWithHost(baseURL, host string) error {
 			Proxy: http.ProxyFromEnvironment,
 		},
 	}
+
+	c.Tokens = &fifo.TokenQueue{}
+	c.Tokens.Init()
 
 	return nil
 }

@@ -18,7 +18,8 @@ func (c *Client) GetSessionTokenInfo() (*SessionTokenInfoResp, error) {
 	if err != nil {
 		return nil, err
 	}
-	c.Token = session.Token
+	c.Tokens.Reset()
+	c.Tokens.Add(session.Token)
 	return &session, nil
 }
 
