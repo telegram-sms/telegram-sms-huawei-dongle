@@ -57,11 +57,6 @@ func (c *Client) Request(path string, body []byte, opt RequestOptions) ([]byte, 
 		err = resp.Body.Close()
 	}
 
-	u, _ := url.Parse(c.BaseURL)
-	for _, cookie := range c.client.Jar.Cookies(u) {
-		fmt.Printf("  %s: %s\n", cookie.Name, cookie.Value)
-	}
-
 	return result, err
 }
 

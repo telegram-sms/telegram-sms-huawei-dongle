@@ -2,7 +2,6 @@ package client
 
 import (
 	"crypto/rsa"
-	"fmt"
 	"github.com/telegram-sms/telegram-sms-huawei-dongle/client/crypto"
 	"net/http"
 )
@@ -17,8 +16,6 @@ func (e *EncryptedRequest) BeforeRequest(req *http.Request) {
 }
 
 func (e *EncryptedRequest) TransformBody(_ *Client, body []byte) []byte {
-	fmt.Printf("before: %s\n", string(body))
 	encrypted := crypto.EncryptHuaweiRSA(body, e.pubKey)
-	fmt.Printf("after:  %s\n", encrypted)
 	return []byte(encrypted)
 }

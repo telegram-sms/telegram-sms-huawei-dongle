@@ -6,7 +6,6 @@ import (
 	"crypto/rsa"
 	"encoding/base64"
 	"encoding/hex"
-	"fmt"
 	"log"
 	"math/big"
 )
@@ -38,8 +37,6 @@ func unPKCS1Type2(src []byte) []byte {
 		// too small or not this type of padding
 		return nil
 	}
-
-	fmt.Printf("first 2 bytes: %02x %02x\n", src[0], src[1])
 
 	for i := size - 1; i > 0; i-- {
 		if src[i] == 0 {
@@ -91,9 +88,7 @@ func DecryptHuaweiRSA(encrypted string, privKey *rsa.PrivateKey) []byte {
 	for i := 0; i < size; i += 256 {
 		c.SetBytes(blob[i : i+256])
 		m.Exp(c, privKey.D, privKey.N)
-		fmt.Println(hex.EncodeToString(m.Bytes()))
 		unpadded := unPKCS1Type2(m.Bytes())
-		//fmt.Println(string(unpadded))
 		buffer.Write(unpadded)
 	}
 
