@@ -1,1 +1,0 @@
-package telegram_sms_huawei_dongle
