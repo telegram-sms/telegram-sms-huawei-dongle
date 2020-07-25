@@ -88,8 +88,7 @@ func (c *Client) API(path string, body interface{}, resp interface{}, opt Reques
 	}
 	log.Printf("xml.resp: %s\n", respBytes)
 
-	err = xml.Unmarshal(respBytes, resp)
-	return err
+	return parseResp(respBytes, resp)
 }
 
 func (c *Client) Init(baseURL string) error {

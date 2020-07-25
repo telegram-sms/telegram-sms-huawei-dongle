@@ -2,14 +2,14 @@ package client
 
 import (
 	"crypto/rsa"
-	"encoding/xml"
 	"github.com/telegram-sms/telegram-sms-huawei-dongle/client/crypto"
 )
 
 type SessionTokenInfoResp struct {
-	XMLName xml.Name `xml:"response"`
-	Session string   `xml:"SesInfo"`
-	Token   string   `xml:"TokInfo"`
+	BaseResp
+
+	Session string `xml:"SesInfo"`
+	Token   string `xml:"TokInfo"`
 }
 
 func (c *Client) GetSessionTokenInfo() (*SessionTokenInfoResp, error) {
@@ -33,9 +33,10 @@ func (c *Client) EnsureTokenExists() error {
 }
 
 type PubKeyResp struct {
-	XMLName xml.Name `xml:"response"`
-	N       string   `xml:"encpubkeyn"`
-	E       string   `xml:"encpubkeye"`
+	BaseResp
+
+	N string `xml:"encpubkeyn"`
+	E string `xml:"encpubkeye"`
 }
 
 func (c *Client) GetPublicKey() (*rsa.PublicKey, error) {

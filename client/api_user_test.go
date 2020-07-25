@@ -13,8 +13,8 @@ func getAdminClient(t *testing.T) *Client {
 	err := c.Init(dongleURL)
 	assert.Nilf(t, err, "could not init")
 	success, err := c.Login("admin", os.Getenv("SECRET_PASSWORD"))
-	assert.Nil(t, err, "could not login")
-	assert.Truef(t, success, "login should success")
+	assert.Nilf(t, err, "could not login")
+	assert.Truef(t, success.IsLoginSuccess(), "login should success")
 
 	login, err := c.GetLoginState()
 	assert.Nilf(t, err, "could not get login state")

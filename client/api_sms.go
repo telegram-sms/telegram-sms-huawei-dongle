@@ -1,9 +1,12 @@
 package client
 
-import "encoding/xml"
+import (
+	"encoding/xml"
+	"time"
+)
 
 type SMSCountResp struct {
-	XMLName xml.Name `xml:"response"`
+	BaseResp
 
 	InboxUnread  string `xml:"LocalUnread"`
 	InboxTotal   string `xml:"LocalInbox"`
@@ -60,7 +63,8 @@ type SMSMessage struct {
 }
 
 type SMSListResp struct {
-	XMLName  xml.Name     `xml:"response"`
+	BaseResp
+
 	Count    string       `xml:"Count"`
 	Messages []SMSMessage `xml:"Messages>Message"`
 }
