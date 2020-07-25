@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func TestClient_Login(t *testing.T) {
+func getAdminClient(t *testing.T) *Client {
 	c := &Client{}
 	err := c.Init(dongleURL)
 	assert.Nilf(t, err, "could not init")
@@ -19,4 +19,10 @@ func TestClient_Login(t *testing.T) {
 	login, err := c.GetLoginState()
 	assert.Nilf(t, err, "could not get login state")
 	assert.Truef(t, login.IsLoggedIn(), "should be logged in state")
+
+	return c
+}
+
+func TestClient_Login(t *testing.T) {
+	_ = getAdminClient(t)
 }
