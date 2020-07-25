@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-func Hex2Int(input string) int {
+func HexToInt(input string) int {
 	result, _ := strconv.ParseInt(input, 16, 31)
 	return int(result)
 }

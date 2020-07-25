@@ -44,7 +44,7 @@ func (c *Client) GetPublicKey() (*rsa.PublicKey, error) {
 	pubKey := &rsa.PublicKey{}
 	err := c.API("/webserver/publickey", nil, &resp, nil)
 	if err == nil {
-		pubKey.E = crypto.Hex2Int(resp.E)
+		pubKey.E = crypto.HexToInt(resp.E)
 		pubKey.N = crypto.HexToBigInt(resp.N)
 	}
 	return pubKey, err
