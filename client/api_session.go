@@ -4,16 +4,16 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 )
 
+// UpdateSession: Call this method periodically to keep session alive (I think)
 func (c *Client) UpdateSession() error {
-	_, err := c.Request("/", nil, nil)
+	_, err := c.Request(c.SessionPath, nil, nil)
 	if err == nil {
 		return nil
 	}
 
-	// Use API to fetch session id
+	// Use API to fetch session id (fallback)
 	session, err := c.GetSessionTokenInfo()
 	if err == nil {
 		sessionID := strings.Replace(session.Session, "SessionID=", "", 1)
@@ -22,9 +22,8 @@ func (c *Client) UpdateSession() error {
 			return err
 		}
 		cookie := &http.Cookie{
-			Name:    "SessionID",
-			Value:   sessionID,
-			Expires: time.Now().AddDate(99, 0, 0),
+			Name:  "SessionID",
+			Value: sessionID,
 		}
 		c.client.Jar.SetCookies(path, []*http.Cookie{cookie})
 	}

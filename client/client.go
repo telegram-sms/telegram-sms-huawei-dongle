@@ -14,9 +14,15 @@ import (
 
 type Client struct {
 	BaseURL string
-	client  http.Client
 	Host    string
 	Tokens  *fifo.TokenQueue
+
+	// The client with cookie jar
+	client http.Client
+
+	// Specify a path to update session cookie.
+	// default to "/html/footer.html" (a very small file that assigns session cookie)
+	SessionPath string
 }
 
 func (c *Client) url(path string) string {
@@ -96,6 +102,10 @@ func (c *Client) InitWithHost(baseURL, host string) error {
 		c.BaseURL = baseURL[:len(baseURL)-1]
 	} else {
 		c.BaseURL = baseURL
+	}
+
+	if c.SessionPath == "" {
+		c.SessionPath = "/html/footer.html"
 	}
 
 	c.Host = host

@@ -23,6 +23,15 @@ func (c *Client) GetSessionTokenInfo() (*SessionTokenInfoResp, error) {
 	return &session, nil
 }
 
+func (c *Client) EnsureTokenExists() error {
+	if c.Tokens.HasAny() {
+		return nil
+	}
+
+	_, err := c.GetSessionTokenInfo()
+	return err
+}
+
 type PubKeyResp struct {
 	XMLName xml.Name `xml:"response"`
 	N       string   `xml:"encpubkeyn"`
