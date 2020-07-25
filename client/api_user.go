@@ -51,8 +51,7 @@ type LoginResp struct {
 }
 
 // Login performs the login routine.
-// useRSA is currently broken and should be set to `false`.
-func (c *Client) Login(username, password string, useRSA bool) (bool, error) {
+func (c *Client) Login(username, password string) (bool, error) {
 	if err := c.UpdateSession(); err != nil {
 		return false, fmt.Errorf("could not renew session: %w", err)
 	}
@@ -72,19 +71,17 @@ func (c *Client) Login(username, password string, useRSA bool) (bool, error) {
 	}
 
 	var opts RequestOptions = nil
-	if useRSA {
-		switches, err := c.GetModuleSwitches()
-		if err != nil {
-			return false, fmt.Errorf("could not get global module switches: %w", err)
-		}
+	switches, err := c.GetModuleSwitches()
+	if err != nil {
+		return false, fmt.Errorf("could not get global module switches: %w", err)
+	}
 
-		if switches.IsEncryptionEnabled() {
-			pubKey, err := c.GetPublicKey()
-			if err != nil {
-				return false, fmt.Errorf("could not fetch rsa key: %w", err)
-			}
-			opts = &EncryptedRequest{pubKey: pubKey}
+	if switches.IsEncryptionEnabled() {
+		pubKey, err := c.GetPublicKey()
+		if err != nil {
+			return false, fmt.Errorf("could not fetch rsa key: %w", err)
 		}
+		opts = &EncryptedRequest{pubKey: pubKey}
 	}
 
 	if login.IsPasswordSalted() {

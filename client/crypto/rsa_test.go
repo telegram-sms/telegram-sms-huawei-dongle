@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/stretchr/testify/assert"
-	"math/big"
 	"testing"
 )
 
@@ -22,8 +21,7 @@ var D = "b56135893161c19ac7e0e519fdfe1351d1132a879a8d9556ff326ef72429165ed5b95f2
 	"33342a6b324c6b82610daae7fcd933b22e5cd50949ecf85bfc0baae84b66271cba4fbb34c54376d4b64e11ce271e6076ce7cacea8e6bdd7d" +
 	"8469b2c497348ad3e862b197f70b12c9ca61f0ef01fff13581e79274c69441ffbd11"
 
-func generateKey(t *testing.T) {
-	_, _, _ = E, N, D
+func _(t *testing.T) {
 	bitSize := 2048
 
 	key, err := rsa.GenerateKey(rand.Reader, bitSize)
@@ -32,12 +30,6 @@ func generateKey(t *testing.T) {
 	fmt.Printf("E: %06x\n", key.E)
 	fmt.Printf("N: %s\n", hex.EncodeToString(key.N.Bytes()))
 	fmt.Printf("D: %s\n", hex.EncodeToString(key.D.Bytes()))
-}
-
-func TestDummy(t *testing.T) {
-	if false {
-		generateKey(t)
-	}
 }
 
 func TestDoHuaWeiRSA(t *testing.T) {
@@ -51,12 +43,9 @@ func TestDoHuaWeiRSA(t *testing.T) {
 		"a562c11562e86e4addc4f619c6222df691d6c5f291365fa685739b25abee4f204cac60c16f7f066b368566a0cc03caca94550518c6e2" +
 		"8fbe31065ca5405dfa5094148d551364e38bdc7562249d867d60829508fceea13650ebe76cd654af74cba05"
 
-	var e = &big.Int{}
-	var d = &big.Int{}
-	var n = &big.Int{}
-	e.SetString(E, 16)
-	d.SetString(D, 16)
-	n.SetString(N, 16)
+	e := HexToBigInt(E)
+	d := HexToBigInt(D)
+	n := HexToBigInt(N)
 
 	privKey := &rsa.PrivateKey{
 		PublicKey: rsa.PublicKey{
@@ -70,12 +59,9 @@ func TestDoHuaWeiRSA(t *testing.T) {
 }
 
 func TestEncryptHuaweiRSA(t *testing.T) {
-	var e = &big.Int{}
-	var d = &big.Int{}
-	var n = &big.Int{}
-	e.SetString(E, 16)
-	d.SetString(D, 16)
-	n.SetString(N, 16)
+	e := HexToBigInt(E)
+	d := HexToBigInt(D)
+	n := HexToBigInt(N)
 
 	privKey := &rsa.PrivateKey{
 		PublicKey: rsa.PublicKey{

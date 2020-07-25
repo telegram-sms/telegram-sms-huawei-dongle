@@ -13,7 +13,7 @@ func TestClient_Login(t *testing.T) {
 	c := &Client{}
 	err := c.Init(dongleURL)
 	assert.Nilf(t, err, "could not init")
-	success, err := c.Login("admin", os.Getenv("SECRET_PASSWORD"), false)
+	success, err := c.Login("admin", os.Getenv("SECRET_PASSWORD"))
 	assert.Nil(t, err, "could not login")
 	assert.Truef(t, success, "login should success")
 

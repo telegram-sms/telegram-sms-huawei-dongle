@@ -56,8 +56,9 @@ func EncryptHuaweiRSA(input []byte, pubKey *rsa.PublicKey) string {
 	result := bytes.NewBuffer(nil)
 	e := &big.Int{}
 	e.SetInt64(int64(pubKey.E))
-	encrypted := &big.Int{}
-	plain := &big.Int{}
+
+	c := &big.Int{}
+	m := &big.Int{}
 
 	b64 := []byte(base64.StdEncoding.EncodeToString(input))
 	maxSize := len(b64)
@@ -68,9 +69,9 @@ func EncryptHuaweiRSA(input []byte, pubKey *rsa.PublicKey) string {
 		}
 		// TODO: Derive block size instead of hard code it.
 		block := pkcs1Type2(b64[i:end], 256)
-		plain.SetBytes(block)
-		encrypted.Exp(plain, e, pubKey.N)
-		result.Write(encrypted.Bytes())
+		m.SetBytes(block)
+		c.Exp(m, e, pubKey.N)
+		result.Write(c.Bytes())
 	}
 
 	return hex.EncodeToString(result.Bytes())

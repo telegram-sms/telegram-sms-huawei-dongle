@@ -3,8 +3,7 @@ package client
 import (
 	"crypto/rsa"
 	"encoding/xml"
-	"math/big"
-	"strconv"
+	"github.com/telegram-sms/telegram-sms-huawei-dongle/client/crypto"
 )
 
 type SessionTokenInfoResp struct {
@@ -34,9 +33,8 @@ func (c *Client) GetPublicKey() (*rsa.PublicKey, error) {
 	pubKey := &rsa.PublicKey{}
 	err := c.API("/webserver/publickey", nil, &resp, nil)
 	if err == nil {
-		pubKey.E, _ = strconv.Atoi(resp.E)
-		pubKey.N = &big.Int{}
-		pubKey.N.SetString(resp.N, 16)
+		pubKey.E = crypto.Hex2Int(resp.E)
+		pubKey.N = crypto.HexToBigInt(resp.N)
 	}
 	return pubKey, err
 }
