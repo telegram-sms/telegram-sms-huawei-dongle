@@ -9,19 +9,23 @@ import (
 
 type LoginStateResp struct {
 	XMLName            xml.Name `xml:"response"`
-	State              string   `xml:"State"`
+	State              int      `xml:"State"`
 	Username           string   `xml:"Username"`
-	PasswordType       string   `xml:"password_type"`
-	ExternPasswordType string   `xml:"extern_password_type"`
-	FirstLogin         string   `xml:"firstlogin"`
+	PasswordType       int      `xml:"password_type"`
+	ExternPasswordType int      `xml:"extern_password_type"`
+	FirstLogin         int      `xml:"firstlogin"`
+}
+
+func (r *LoginStateResp) IsLoggedIn() bool {
+	return r.State == 0
 }
 
 func (r *LoginStateResp) UseScarmLogin() bool {
-	return r.ExternPasswordType == "1"
+	return r.ExternPasswordType == 1
 }
 
 func (r *LoginStateResp) IsPasswordSalted() bool {
-	return !r.UseScarmLogin() && r.PasswordType == "4"
+	return !r.UseScarmLogin() && r.PasswordType == 4
 }
 
 func (c *Client) GetLoginState() (*LoginStateResp, error) {
@@ -38,39 +42,46 @@ type loginPayload struct {
 	XMLName      xml.Name `xml:"request"`
 	Username     string   `xml:"Username"`
 	Password     string   `xml:"Password"`
-	PasswordType string   `xml:"password_type"`
+	PasswordType int      `xml:"password_type"`
 }
 
 type LoginResp struct {
+	XMLName xml.Name `xml:"response"`
+	Value   string   `xml:",chardata"`
 }
 
 // Login performs the login routine.
 // useRSA is currently broken and should be set to `false`.
-func (c *Client) Login(username, password string, useRSA bool) (*LoginResp, error) {
+func (c *Client) Login(username, password string, useRSA bool) (bool, error) {
 	if err := c.UpdateSession(); err != nil {
-		return nil, fmt.Errorf("could not renew session: %w", err)
+		return false, fmt.Errorf("could not renew session: %w", err)
 	}
 
 	login, err := c.GetLoginState()
 	if err != nil {
-		return nil, err
+		return false, err
+	}
+
+	// Already logged in.
+	if login.IsLoggedIn() {
+		return true, nil
 	}
 
 	if login.UseScarmLogin() {
-		return nil, fmt.Errorf("unsupported login type: SCARM")
+		return false, fmt.Errorf("unsupported login type: SCARM")
 	}
 
 	var opts RequestOptions = nil
 	if useRSA {
 		switches, err := c.GetModuleSwitches()
 		if err != nil {
-			return nil, fmt.Errorf("could not get global module switches: %w", err)
+			return false, fmt.Errorf("could not get global module switches: %w", err)
 		}
 
 		if switches.IsEncryptionEnabled() {
 			pubKey, err := c.GetPublicKey()
 			if err != nil {
-				return nil, fmt.Errorf("could not fetch rsa key: %w", err)
+				return false, fmt.Errorf("could not fetch rsa key: %w", err)
 			}
 			opts = &EncryptedRequest{pubKey: pubKey}
 		}
@@ -79,7 +90,7 @@ func (c *Client) Login(username, password string, useRSA bool) (*LoginResp, erro
 	if login.IsPasswordSalted() {
 		sess, err := c.GetSessionTokenInfo()
 		if err != nil {
-			return nil, fmt.Errorf("could not fetch session token: %w", err)
+			return false, fmt.Errorf("could not fetch session token: %w", err)
 		}
 		log.Printf("using salted password (token: %s)\n", sess.Token)
 		password = crypto.EncodeSaltedPassword(username, password, sess.Token)
@@ -95,5 +106,5 @@ func (c *Client) Login(username, password string, useRSA bool) (*LoginResp, erro
 	}
 	resp := LoginResp{}
 	err = c.API("/user/login", payload, &resp, opts)
-	return &resp, err
+	return resp.Value == "OK", err
 }
