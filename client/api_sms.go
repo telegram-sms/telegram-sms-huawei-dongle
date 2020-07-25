@@ -116,3 +116,85 @@ func (c *Client) SMSListAPI(body *SMSListPayload) (*SMSListResp, error) {
 	err := c.API("/sms/sms-list", body, resp, nil)
 	return resp, err
 }
+
+type SMSSendPayload struct {
+	XMLName xml.Name `xml:"request"`
+
+	// Set to -1; or a draft SMS ID
+	ID int64 `xml:"Index"`
+
+	// Phone numbers to sent
+	Phones []string `xml:"Phones>Phone"`
+
+	// empty string
+	SCA string `xml:"Sca"`
+
+	// Text message
+	Content string `xml:"Content"`
+	// Message size
+	Length int `xml:"Length"`
+
+	// Set this field to "1"
+	SMSType int `xml:"Reserved"`
+
+	// Format: "yyyy-MM-dd hh:mm:ss"
+	// Use "SetDate" to help you.
+	Date string `xml:"Date"`
+}
+
+func (s *SMSSendPayload) SetDate(date time.Time) {
+	s.Date = date.Format("2006-01-02 15:04:05")
+}
+
+func (s *SMSSendPayload) SetDateToNow() {
+	s.SetDate(time.Now())
+}
+
+type SMSSendResp struct {
+	BaseResp
+}
+
+// SendSMS sends a text message to a specified phone number.
+func (c *Client) SendSMS(phone, message string) (*SMSSendResp, error) {
+	body := &SMSSendPayload{
+		ID:      -1,
+		Phones:  []string{phone},
+		SCA:     "",
+		Content: message,
+		Length:  len(message),
+		SMSType: 1,
+	}
+	body.SetDateToNow()
+	return c.SendSMSAPI(body)
+}
+
+func (c *Client) SendSMSAPI(body *SMSSendPayload) (*SMSSendResp, error) {
+	resp := &SMSSendResp{}
+	err := c.API("/sms/send-sms", body, resp, nil)
+	return resp, err
+}
+
+type SMSSendStatusResp struct {
+	BaseResp
+
+	// Phone number not delivered yet
+	Phone string `xml:"Phone"`
+
+	// Phone number delivered successfully
+	SuccessPhone string `xml:"SucPhone"`
+
+	// Phone number failed to deliver
+	FailedPhone string `xml:"FailPhone"`
+
+	// The number of message sent from last request
+	TotalCount uint `xml:"TotalCount"`
+
+	// Current index (start from 1)
+	CurIndex uint `xml:"CurIndex"`
+}
+
+func (c *Client) GetSendStatus() (*SMSSendStatusResp, error) {
+	resp := &SMSSendStatusResp{}
+	err := c.API("/sms/send-status", nil, resp, nil)
+	return resp, err
+}

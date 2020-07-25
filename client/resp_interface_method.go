@@ -28,6 +28,10 @@ func (r *PubKeyResp) setTagName(tagName string) {
 	r.XMLName.Local = tagName
 }
 
-func (r *BaseResp) setTagName(tagName string) {
+func (r *SMSSendResp) setTagName(tagName string) {
+	r.XMLName.Local = tagName
+}
+
+func (r *SMSSendStatusResp) setTagName(tagName string) {
 	r.XMLName.Local = tagName
 }

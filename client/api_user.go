@@ -103,7 +103,7 @@ func (c *Client) Login(username, password string) (*LoginResp, error) {
 		PasswordType: login.PasswordType,
 	}
 	resp := &LoginResp{}
-	err = c.API("/user/login", payload, &resp, opts)
+	err = c.API("/user/login", payload, resp, opts)
 
 	if resp.Value == "OK" {
 		resp.ErrorCode = 0
