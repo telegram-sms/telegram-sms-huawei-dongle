@@ -156,7 +156,6 @@ func botCommand(clientOBJ *client.Client, SystemConfig ConfigObj) {
 		response := fmt.Sprintf("%s\nBattery Level: %s\nNetwork status: %s\nSIM: %s", SYSTEMHEAD, unavailable, unavailable, unavailable)
 		botHandle.Send(m.Sender, response)
 	})
-	log.Println("start")
 	botHandle.Start()
 
 }
@@ -202,12 +201,10 @@ func getAdminClient(dongleURL string, password string) *client.Client {
 	log.Println("logging in...")
 	c := &client.Client{}
 	_ = c.Init(dongleURL)
-	_ = c.UpdateSessionUsingAPI()
 	_, err := c.Login("admin", password)
 	if err != nil {
 		log.Fatal(err)
 	}
-	_ = c.UpdateSessionUsingAPI()
 	_, _ = c.GetSessionTokenInfo()
 	if checkLoginStatus(c) {
 		return c
