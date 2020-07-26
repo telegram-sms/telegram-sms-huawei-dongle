@@ -5,6 +5,15 @@ import (
 	"time"
 )
 
+//goland:noinspection GoUnusedConst,GoSnakeCaseUsage
+const (
+	SMS_UNREAD_STATUS = 0
+	SMS_READ_STATUS   = 1
+	SMS_DRAFT_STATUS  = 2
+	SMS_SENT_STATUS   = 3
+	SMS_ERROR_STATUS  = 4
+)
+
 type SMSCountResp struct {
 	BaseResp
 
@@ -197,4 +206,20 @@ func (c *Client) GetSendStatus() (*SMSSendStatusResp, error) {
 	resp := &SMSSendStatusResp{}
 	err := c.API("/sms/send-status", nil, resp, nil)
 	return resp, err
+}
+
+type SMSSetReadPayload struct {
+	XMLName xml.Name `xml:"request"`
+	// Set to -1; or a draft SMS ID
+	ID int64 `xml:"Index"`
+}
+
+func (c *Client) SetRead(Index int64) {
+	body := &SMSSetReadPayload{
+		ID: Index,
+	}
+	c.SetReadAPI(body)
+}
+func (c *Client) SetReadAPI(body *SMSSetReadPayload) {
+	_ = c.API("/sms/set-read", body, nil, nil)
 }

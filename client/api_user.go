@@ -56,8 +56,61 @@ func (r *LoginResp) IsLoginSuccess() bool {
 	return r.Value == "OK"
 }
 
+func (c *Client) encodePassword(username, password string, salted bool) (string, error) {
+	encoded := ""
+
+	if salted {
+		sess, err := c.GetSessionTokenInfo()
+		if err != nil {
+			return "", fmt.Errorf("could not fetch session token: %w", err)
+		}
+		log.Printf("using salted password (token: %s)\n", sess.Token)
+		encoded = crypto.EncodeSaltedPassword(username, password, sess.Token)
+	} else {
+		log.Println("using base64 for password")
+		encoded = crypto.B64(password)
+	}
+
+	return encoded, nil
+}
+
+func (c *Client) doLogin(username, encodedPassword string, pwType int, opts RequestOptions) (*LoginResp, error) {
+	payload := loginPayload{
+		Username:     username,
+		Password:     encodedPassword,
+		PasswordType: pwType,
+	}
+	resp := &LoginResp{}
+	err := c.API("/user/login", payload, resp, opts)
+
+	if resp.Value == "OK" {
+		resp.ErrorCode = 0
+	}
+	return resp, err
+}
+
 // Login performs the login routine.
+// It ignores configurations dispatched by the dongle.
 func (c *Client) Login(username, password string) (*LoginResp, error) {
+	if err := c.UpdateSession(); err != nil {
+		return nil, fmt.Errorf("could not renew session: %w", err)
+	}
+
+	login, err := c.GetLoginState()
+	if err != nil {
+		return nil, err
+	}
+
+	encodedPassword, err := c.encodePassword(username, password, login.IsPasswordSalted())
+	if err != nil {
+		return nil, err
+	}
+
+	return c.doLogin(username, encodedPassword, login.PasswordType, nil)
+}
+
+// SlowLogin performs the login routine same as the browser.
+func (c *Client) LoginSlow(username, password string) (*LoginResp, error) {
 	if err := c.UpdateSession(); err != nil {
 		return nil, fmt.Errorf("could not renew session: %w", err)
 	}
@@ -85,28 +138,10 @@ func (c *Client) Login(username, password string) (*LoginResp, error) {
 		opts = &EncryptedRequest{pubKey: pubKey}
 	}
 
-	if login.IsPasswordSalted() {
-		sess, err := c.GetSessionTokenInfo()
-		if err != nil {
-			return nil, fmt.Errorf("could not fetch session token: %w", err)
-		}
-		log.Printf("using salted password (token: %s)\n", sess.Token)
-		password = crypto.EncodeSaltedPassword(username, password, sess.Token)
-	} else {
-		log.Println("using base64 for password")
-		password = crypto.B64(password)
+	encodedPassword, err := c.encodePassword(username, password, login.IsPasswordSalted())
+	if err != nil {
+		return nil, err
 	}
 
-	payload := loginPayload{
-		Username:     username,
-		Password:     password,
-		PasswordType: login.PasswordType,
-	}
-	resp := &LoginResp{}
-	err = c.API("/user/login", payload, resp, opts)
-
-	if resp.Value == "OK" {
-		resp.ErrorCode = 0
-	}
-	return resp, err
+	return c.doLogin(username, encodedPassword, login.PasswordType, opts)
 }

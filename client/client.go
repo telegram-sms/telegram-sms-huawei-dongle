@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"encoding/xml"
 	"fmt"
+	"github.com/telegram-sms/telegram-sms-huawei-dongle/client/cookiejar"
 	"github.com/telegram-sms/telegram-sms-huawei-dongle/client/fifo"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/http/cookiejar"
 	"net/url"
 )
 
