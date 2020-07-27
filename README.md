@@ -36,6 +36,19 @@ You can follow the Telegram channel [Telegram SMS 更新日志](https://t.me/tg_
 - [繁體中文](https://get.telegram-sms.com/wiki/用戶手冊)
 - [日本語](https://get.telegram-sms.com/wiki/マニュアル)
 
+Please create a file named `config.json` in the program directory. The following is an example:
+
+```
+{
+	"bot_token":"<YOUR_BOT_TOKEN>",
+	"chat_id":<YOUR_CHAT_ID>,
+	"dongle_url":"http://192.168.8.1",
+	"password":"<YOUR_DONGLE_ADMIN_PASSWORD>"
+}
+
+
+```
+
 ## License
 
 Telegram SMS Huawei dongle is licensed under [BSD 3-Clause License](https://github.com/telegram-sms/telegram-sms-huawei-dongle/blob/master/LICENSE).
