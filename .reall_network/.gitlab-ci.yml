@@ -20,3 +20,10 @@ release_github:
         - eval $(ssh-agent -s)
         - ssh-add - <<< $(curl https://${KEYSTORE_SERVER}/gitlab-sshkey/id_ecdsa -u gitlab:${key_store_passwd})
         - git push --set-upstream git@github.com:${OWNER}/${REPO}.git HEAD:refs/heads/${CI_COMMIT_REF_NAME}
+
+build:
+    image: 1.14.6-alpine3.12
+    stage: build
+    script:
+        - export CGO_ENABLED=0
+        - GOOS=linux GOARCH=amd64 go build

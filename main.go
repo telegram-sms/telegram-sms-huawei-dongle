@@ -47,11 +47,11 @@ func main() {
 		return
 	}
 
-	dongleClient := getAdminClient(SystemConfig.DongleURL, SystemConfig.AdminPassword)
+	adminClient := getAdminClient(SystemConfig.DongleURL, SystemConfig.AdminPassword)
 
-	go receiveSMS(dongleClient, botHandle, SystemConfig)
+	go receiveSMS(adminClient, botHandle, SystemConfig)
 
-	botCommand(dongleClient, botHandle, SystemConfig)
+	botCommand(adminClient, botHandle, SystemConfig)
 }
 
 func receiveSMS(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig ConfigObj) {
@@ -96,7 +96,6 @@ func botCommand(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig C
 	})
 
 	botHandle.Handle("/sendsms", func(m *telebot.Message) {
-		log.Println("/sendsms")
 		if !checkChatState(SystemConfig.ChatId, m) {
 			return
 		}
@@ -141,7 +140,6 @@ func botCommand(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig C
 	})
 
 	botHandle.Handle("/getinfo", func(m *telebot.Message) {
-		log.Println("/getinfo")
 		if !checkChatState(SystemConfig.ChatId, m) {
 			return
 		}
