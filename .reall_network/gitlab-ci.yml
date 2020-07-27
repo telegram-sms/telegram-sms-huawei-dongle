@@ -1,39 +1,39 @@
 stages:
-  - build
-  - push
-  - release
+    - build
+    - push
+    - release
 
 variables:
-  OWNER: telegram-sms
-  REPO: telegram-sms-huawei-dongle
-  KEYSTORE_SERVER: keystore.reallserver.cn
+    OWNER: telegram-sms
+    REPO: telegram-sms-huawei-dongle
+    KEYSTORE_SERVER: keystore.reallserver.cn
 
 release_github:
-  stage: push
-  only:
-    - master
-  script:
-    - eval $(ssh-agent -s)
-    - ssh-add - <<< $(curl https://${KEYSTORE_SERVER}/gitlab-sshkey/id_ecdsa -u gitlab:${key_store_passwd})
-    - git push --set-upstream git@github.com:${OWNER}/${REPO}.git HEAD:refs/heads/${CI_COMMIT_REF_NAME}
-    - curl https://${KEYSTORE_SERVER}/gitlab-sshkey/github-key.env -o .reall_network/github-key.env -u gitlab:${key_store_passwd}
-    - . .reall_network/github-key.env
-    - ghr -t "${GITHUB_ACCESS_KEY}" -u "${OWNER}" -r "${REPO}" -b "$(cat .reall_network/changelog.txt)" "${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHORT_SHA}-$(date "+%Y%m%d%H%M")" "./releases"
+    stage: push
+    only:
+        - master
+    script:
+        - eval $(ssh-agent -s)
+        - ssh-add - <<< $(curl https://${KEYSTORE_SERVER}/gitlab-sshkey/id_ecdsa -u gitlab:${key_store_passwd})
+        - git push --set-upstream git@github.com:${OWNER}/${REPO}.git HEAD:refs/heads/${CI_COMMIT_REF_NAME}
+        - curl https://${KEYSTORE_SERVER}/gitlab-sshkey/github-key.env -o .reall_network/github-key.env -u gitlab:${key_store_passwd}
+        - . .reall_network/github-key.env
+        - ghr -t "${GITHUB_ACCESS_KEY}" -u "${OWNER}" -r "${REPO}" -b "$(cat .reall_network/changelog.txt)" "${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHORT_SHA}-$(date "+%Y%m%d%H%M")" "./releases"
 
 build:
-  image: golang:1.14.6-alpine3.12
-  stage: build
-  script:
-    - mkdir releases
-    - export CGO_ENABLED=0
-    - GOOS=freebsd GOARCH=amd64 go build -O ./releases/telegram-sms-huawei-freebsd-amd64
-    - GOOS=freebsd GOARCH=arm64 go build -O ./releases/telegram-sms-huawei-freebsd-amd64
-    - GOOS=darwin GOARCH=amd64 go build -O ./releases/telegram-sms-huawei-darwin-amd64
-    - GOOS=windows GOARCH=amd64 go build -O ./releases/telegram-sms-huawei-windows-amd64
-    - GOOS=linux GOARCH=amd64 go build -O ./releases/telegram-sms-huawei-linux-amd64
-    - GOOS=linux GOARCH=arm go build -O ./releases/telegram-sms-huawei-linux-arm
-    - GOOS=linux GOARCH=arm64 go build -O ./releases/telegram-sms-huawei-windows-arm64
+    image: golang:1.14.6-alpine3.12
+    stage: build
+    script:
+        - mkdir releases
+        - export CGO_ENABLED=0
+        - GOOS=freebsd GOARCH=amd64 go build -O ./releases/telegram-sms-huawei-freebsd-amd64
+        - GOOS=freebsd GOARCH=arm64 go build -O ./releases/telegram-sms-huawei-freebsd-amd64
+        - GOOS=darwin GOARCH=amd64 go build -O ./releases/telegram-sms-huawei-darwin-amd64
+        - GOOS=windows GOARCH=amd64 go build -O ./releases/telegram-sms-huawei-windows-amd64
+        - GOOS=linux GOARCH=amd64 go build -O ./releases/telegram-sms-huawei-linux-amd64
+        - GOOS=linux GOARCH=arm go build -O ./releases/telegram-sms-huawei-linux-arm
+        - GOOS=linux GOARCH=arm64 go build -O ./releases/telegram-sms-huawei-windows-arm64
     artifacts:
-      paths:
-        - releases/
-      expire_in: 1 week
+        paths:
+            - releases/
+        expire_in: 1 week
