@@ -7,7 +7,6 @@ import (
 	"github.com/telegram-sms/telegram-sms-huawei-dongle/client/cookiejar"
 	"github.com/telegram-sms/telegram-sms-huawei-dongle/client/fifo"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 )
@@ -76,7 +75,7 @@ func (c *Client) Request(path string, body []byte, opt RequestOptions) ([]byte, 
 }
 
 func (c *Client) API(path string, body interface{}, resp interface{}, opt RequestOptions) error {
-	log.Printf("xml.req: %s: %s\n", path, body)
+	//log.Printf("xml.req: %s: %s\n", path, body)
 	bodyBytes, err := xml.Marshal(body)
 	if err != nil {
 		return fmt.Errorf("could not convert request body to xml: %w", err)
@@ -86,7 +85,7 @@ func (c *Client) API(path string, body interface{}, resp interface{}, opt Reques
 	if err != nil {
 		return fmt.Errorf("failed to make request: %w", err)
 	}
-	log.Printf("xml.resp: %s\n", respBytes)
+	//log.Printf("xml.resp: %s\n", respBytes)
 
 	return parseResp(respBytes, resp)
 }

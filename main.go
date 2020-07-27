@@ -36,7 +36,6 @@ func main() {
 	}
 
 	log.Println("Configuration file loaded.")
-
 	var botHandle, err = telebot.NewBot(telebot.Settings{
 		URL:    "https://api.telegram.org",
 		Token:  SystemConfig.BotToken,
@@ -66,7 +65,7 @@ func receiveSMS(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig C
 		}
 		log.Printf("Unread: %s\n", strconv.Itoa(result.InboxUnread))
 		if result.InboxUnread > 0 {
-			response, err := clientOBJ.SMSList(1, 50)
+			response, err := clientOBJ.SMSList(1, 500)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -77,7 +76,7 @@ func receiveSMS(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig C
 					messageID, _ := strconv.ParseInt(item.MessageID, 10, 64)
 					clientOBJ.SetRead(messageID)
 				} else {
-					log.Println("The message has been read, skip it.")
+					//log.Println("The message has been read, skip it.")
 				}
 			}
 		}
@@ -87,8 +86,17 @@ func receiveSMS(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig C
 }
 
 func botCommand(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig ConfigObj) {
+	var SMSSendInfoNextStatus = -1
+	var SMSSendPhoneNumber = ""
+	//goland:noinspection GoUnusedConst,GoSnakeCaseUsage
+	const (
+		SMS_SEND_INFO_STANDBY_STATUS       = -1
+		SMS_SEND_INFO_PHONE_INPUT_STATUS   = 0
+		SMS_SEND_INFO_MESSAGE_INPUT_STATUS = 1
+	)
+
 	botHandle.Handle("/start", func(m *telebot.Message) {
-		log.Println("/start")
+		SMSSendInfoNextStatus = SMS_SEND_INFO_STANDBY_STATUS
 		if !checkChatState(SystemConfig.ChatId, m) {
 			return
 		}
@@ -96,6 +104,7 @@ func botCommand(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig C
 	})
 
 	botHandle.Handle("/sendsms", func(m *telebot.Message) {
+		SMSSendInfoNextStatus = SMS_SEND_INFO_STANDBY_STATUS
 		if !checkChatState(SystemConfig.ChatId, m) {
 			return
 		}
@@ -112,8 +121,10 @@ func botCommand(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig C
 		commandList := strings.Split(command, "\n")
 		log.Println(len(commandList))
 		if len(commandList) <= 2 {
-			log.Println("Command format error.")
-			botHandle.Send(m.Sender, head+"\nFail to get information.")
+			//log.Println("Command format error.")
+			//botHandle.Send(m.Sender, head+"\nFail to get information.")
+			SMSSendInfoNextStatus = SMS_SEND_INFO_PHONE_INPUT_STATUS
+			botHandle.Send(m.Sender, head+"\nPlease enter the receiver's number.")
 			return
 		}
 		if !isPhoneNumber(commandList[1]) {
@@ -131,15 +142,11 @@ func botCommand(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig C
 			buffer.WriteString(commandList[i-1])
 		}
 		Content := buffer.String()
-		log.Println(fmt.Sprintf("%s To: %s Content: %s", head, PhoneNumber, Content))
-		botHandle.Send(m.Sender, fmt.Sprintf("%s\nTo: %s\nContent: %s", head, PhoneNumber, Content))
-		_, err := clientOBJ.SendSMS(PhoneNumber, Content)
-		if err != nil {
-			log.Fatal(err)
-		}
+		doSendSMS(botHandle, m, clientOBJ, PhoneNumber, Content)
 	})
 
 	botHandle.Handle("/getinfo", func(m *telebot.Message) {
+		SMSSendInfoNextStatus = SMS_SEND_INFO_STANDBY_STATUS
 		if !checkChatState(SystemConfig.ChatId, m) {
 			return
 		}
@@ -147,7 +154,39 @@ func botCommand(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig C
 		response := fmt.Sprintf("%s\nBattery Level: %s\nNetwork status: %s\nSIM: %s", SYSTEMHEAD, unavailable, unavailable, unavailable)
 		botHandle.Send(m.Sender, response)
 	})
+
+	botHandle.Handle(telebot.OnText, func(m *telebot.Message) {
+		log.Println(m.Text)
+		switch SMSSendInfoNextStatus {
+		case SMS_SEND_INFO_STANDBY_STATUS:
+			return
+		case SMS_SEND_INFO_PHONE_INPUT_STATUS:
+			if !isPhoneNumber(m.Text) {
+				botHandle.Send(m.Sender, "This phone number is invalid. Please enter it again.")
+				break
+			}
+			SMSSendPhoneNumber = m.Text
+			SMSSendInfoNextStatus = SMS_SEND_INFO_MESSAGE_INPUT_STATUS
+			botHandle.Send(m.Sender, "Please enter the message to be sent.")
+			break
+		case SMS_SEND_INFO_MESSAGE_INPUT_STATUS:
+			doSendSMS(botHandle, m, clientOBJ, SMSSendPhoneNumber, m.Text)
+			break
+		}
+		return
+	})
 	botHandle.Start()
+
+}
+
+func doSendSMS(botHandle *telebot.Bot, m *telebot.Message, clientOBJ *client.Client, PhoneNumber string, Content string) {
+	head := "[Send SMS]"
+	log.Println(fmt.Sprintf("%s To: %s Content: %s", head, PhoneNumber, Content))
+	botHandle.Send(m.Sender, fmt.Sprintf("%s\nTo: %s\nContent: %s", head, PhoneNumber, Content))
+	_, err := clientOBJ.SendSMS(PhoneNumber, Content)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 }
 
@@ -182,7 +221,7 @@ func checkLoginStatus(dongleClient *client.Client) bool {
 		return false
 	}
 	if login.IsLoggedIn() {
-		log.Println("Huawei dongle login detected.")
+		//log.Println("Huawei dongle login detected.")
 		return true
 	}
 	return false
