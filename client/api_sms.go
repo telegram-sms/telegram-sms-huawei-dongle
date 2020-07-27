@@ -14,6 +14,20 @@ const (
 	SMS_ERROR_STATUS  = 4
 )
 
+//goland:noinspection GoUnusedConst,GoSnakeCaseUsage
+const (
+	SMS_BOX_TYPE_LOCAL_INBOX = 1
+	SMS_BOX_TYPE_LOCAL_SENT  = 2
+	SMS_BOX_TYPE_LOCAL_DRAFT = 3
+	SMS_BOX_TYPE_LOCAL_TRASH = 4
+	SMS_BOX_TYPE_SIM_INBOX   = 5
+	SMS_BOX_TYPE_SIM_SENT    = 6
+	SMS_BOX_TYPE_SIM_DRAFT   = 7
+	SMS_BOX_TYPE_MIX_INBOX   = 8
+	SMS_BOX_TYPE_MIX_SENT    = 9
+	SMS_BOX_TYPE_MIX_DRAFT   = 10
+)
+
 type SMSCountResp struct {
 	BaseResp
 
@@ -46,12 +60,9 @@ func (c *Client) SMSCount() (*SMSCountResp, error) {
 }
 
 type SMSMessage struct {
-	XMLName xml.Name `xml:"Message"`
-
-	// 0: Unread; 1: Read; 2: Draft; 3: Sent; 4: Warning/Error(?)
-	Status int `xml:"Smstat"`
-
-	MessageID string `xml:"Index"`
+	XMLName   xml.Name `xml:"Message"`
+	Status    int      `xml:"Smstat"`
+	MessageID string   `xml:"Index"`
 
 	// Can be multiple phone numbers, separated by ";"
 	Phone   string `xml:"Phone"`
@@ -86,18 +97,6 @@ type SMSListPayload struct {
 
 	// default value in web is 20
 	MessagesPerPage int `xml:"ReadCount"`
-
-	// BoxType can be one of the following value:
-	// LOCAL_INBOX = 1;
-	// LOCAL_SENT  = 2;
-	// LOCAL_DRAFT = 3;
-	// LOCAL_TRASH = 4;
-	// SIM_INBOX   = 5;
-	// SIM_SENT    = 6;
-	// SIM_DRAFT   = 7;
-	// MIX_INBOX   = 8;
-	// MIX_SENT    = 9;
-	// MIX_DRAFT   = 10;
 	BoxType         int `xml:"BoxType"`
 	SortType        int `xml:"SortType"`
 	Ascending       int `xml:"Ascending"`
@@ -111,7 +110,7 @@ func (c *Client) SMSList(page, messagesPerPage int) (*SMSListResp, error) {
 	body := &SMSListPayload{
 		Page:            page,
 		MessagesPerPage: messagesPerPage,
-		BoxType:         1,
+		BoxType:         SMS_BOX_TYPE_LOCAL_INBOX,
 		SortType:        0,
 		Ascending:       0,
 		UnreadPreferred: 0,

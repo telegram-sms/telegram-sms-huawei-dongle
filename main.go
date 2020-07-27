@@ -37,7 +37,9 @@ func main() {
 
 	log.Println("Configuration file loaded.")
 	dongleClient := getAdminClient(SystemConfig.DongleURL, SystemConfig.AdminPassword)
+
 	go receiveSMS(dongleClient, SystemConfig)
+
 	botCommand(dongleClient, SystemConfig)
 }
 
@@ -45,7 +47,7 @@ func receiveSMS(clientOBJ *client.Client, SystemConfig ConfigObj) {
 	var botHandle, err = telebot.NewBot(telebot.Settings{
 		URL:    "https://api.telegram.org",
 		Token:  SystemConfig.BotToken,
-		Poller: &telebot.LongPoller{Timeout: 10 * time.Second},
+		Poller: &telebot.LongPoller{Timeout: 50 * time.Second},
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -206,10 +208,5 @@ func getAdminClient(dongleURL string, password string) *client.Client {
 		log.Fatal(err)
 	}
 	_, _ = c.GetSessionTokenInfo()
-	if checkLoginStatus(c) {
-		return c
-	} else {
-		return nil
-	}
-
+	return c
 }
