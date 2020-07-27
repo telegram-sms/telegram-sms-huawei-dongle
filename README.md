@@ -45,8 +45,6 @@ Please create a file named `config.json` in the program directory. The following
 	"dongle_url":"http://192.168.8.1",
 	"password":"<YOUR_DONGLE_ADMIN_PASSWORD>"
 }
-
-
 ```
 
 ## License
