@@ -91,7 +91,7 @@ func (c *Client) doLogin(username, encodedPassword string, pwType int, opts Requ
 
 // Login performs the login routine.
 // It ignores configurations dispatched by the dongle.
-func (c *Client) Login(username, password string) (*LoginResp, error) {
+func (c *Client) QuickLogin(username, password string) (*LoginResp, error) {
 	if err := c.UpdateSession(); err != nil {
 		return nil, fmt.Errorf("could not renew session: %w", err)
 	}
@@ -113,7 +113,7 @@ func (c *Client) Login(username, password string) (*LoginResp, error) {
 }
 
 // SlowLogin performs the login routine same as the browser.
-func (c *Client) LoginSlow(username, password string) (*LoginResp, error) {
+func (c *Client) Login(username, password string) (*LoginResp, error) {
 	if err := c.UpdateSession(); err != nil {
 		return nil, fmt.Errorf("could not renew session: %w", err)
 	}
@@ -124,7 +124,8 @@ func (c *Client) LoginSlow(username, password string) (*LoginResp, error) {
 	}
 
 	if login.UseScarmLogin() {
-		return nil, fmt.Errorf("unsupported login type: SCARM")
+		log.Println("unsupported login type: SCARM, Try to use quick login.")
+		return c.QuickLogin(username, password)
 	}
 
 	var opts RequestOptions = nil
