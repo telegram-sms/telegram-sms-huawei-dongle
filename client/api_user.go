@@ -101,12 +101,15 @@ func (c *Client) Login(username, password string) (*LoginResp, error) {
 		return nil, err
 	}
 
-	encodedPassword, err := c.encodePassword(username, password, login.IsPasswordSalted())
+	var opts RequestOptions = nil
+	sess, err := c.GetSessionTokenInfo()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not fetch session token: %w", err)
 	}
+	log.Printf("using salted password (token: %s)\n", sess.Token)
+	encodedPassword := crypto.EncodeSaltedPassword(username, password, sess.Token)
 
-	return c.doLogin(username, encodedPassword, login.PasswordType, nil)
+	return c.doLogin(username, encodedPassword, login.PasswordType, opts)
 }
 
 // SlowLogin performs the login routine same as the browser.
