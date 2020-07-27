@@ -64,7 +64,7 @@ func receiveSMS(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig C
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Printf("Unread: %s\n", result.InboxUnread)
+		log.Printf("Unread: %s\n", strconv.Itoa(result.InboxUnread))
 		if result.InboxUnread > 0 {
 			response, err := clientOBJ.SMSList(1, 50)
 			if err != nil {
