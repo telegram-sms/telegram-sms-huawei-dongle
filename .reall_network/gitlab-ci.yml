@@ -26,13 +26,13 @@ build:
     script:
         - mkdir releases
         - export CGO_ENABLED=0
-        - GOOS=freebsd GOARCH=amd64 go build -O ./releases/telegram-sms-huawei-freebsd-amd64
-        - GOOS=freebsd GOARCH=arm64 go build -O ./releases/telegram-sms-huawei-freebsd-amd64
-        - GOOS=darwin GOARCH=amd64 go build -O ./releases/telegram-sms-huawei-darwin-amd64
-        - GOOS=windows GOARCH=amd64 go build -O ./releases/telegram-sms-huawei-windows-amd64
-        - GOOS=linux GOARCH=amd64 go build -O ./releases/telegram-sms-huawei-linux-amd64
-        - GOOS=linux GOARCH=arm go build -O ./releases/telegram-sms-huawei-linux-arm
-        - GOOS=linux GOARCH=arm64 go build -O ./releases/telegram-sms-huawei-windows-arm64
+        - GOOS=freebsd GOARCH=amd64 go build -o ./releases/telegram-sms-huawei-freebsd-amd64
+        - GOOS=freebsd GOARCH=arm64 go build -o ./releases/telegram-sms-huawei-freebsd-amd64
+        - GOOS=darwin GOARCH=amd64 go build -o ./releases/telegram-sms-huawei-darwin-amd64
+        - GOOS=windows GOARCH=amd64 go build -o ./releases/telegram-sms-huawei-windows-amd64
+        - GOOS=linux GOARCH=amd64 go build -o ./releases/telegram-sms-huawei-linux-amd64
+        - GOOS=linux GOARCH=arm go build -o ./releases/telegram-sms-huawei-linux-arm
+        - GOOS=linux GOARCH=arm64 go build -o ./releases/telegram-sms-huawei-windows-arm64
     artifacts:
         paths:
             - releases/
