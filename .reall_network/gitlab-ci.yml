@@ -22,7 +22,7 @@ release_github:
         - git push --set-upstream git@github.com:${OWNER}/${REPO}.git HEAD:refs/heads/${CI_COMMIT_REF_NAME}
 
 build:
-    image: 1.14.6-alpine3.12
+    image: golang:1.14.6-alpine3.12
     stage: build
     script:
         - export CGO_ENABLED=0
