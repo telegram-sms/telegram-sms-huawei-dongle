@@ -2,10 +2,6 @@ stages:
     - build
     - push
     - release
-cache:
-    key: ${CI_PROJECT_ID}
-    paths:
-        - .gradle/
 
 variables:
     OWNER: telegram-sms
