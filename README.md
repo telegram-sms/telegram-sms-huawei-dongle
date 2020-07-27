@@ -19,7 +19,7 @@ You can follow the Telegram channel [Telegram SMS 更新日志](https://t.me/tg_
 
 **Warning**: All versions are not compatible (not signed by the same key)! You will have to uninstall one to install the other, which will delete all your data.
 
-[Latest Release Download](https://github.com/telegram-sms/telegram-sms/releases/latest)
+[Latest Release Download](https://github.com/telegram-sms/telegram-sms-huawei-dongle/releases/latest)
 
 **No warranty expressed or implied. Use at your own risk. You have been warned.**
 
