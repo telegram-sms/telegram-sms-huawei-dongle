@@ -157,17 +157,18 @@ func botCommand(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig C
 
 	botHandle.Handle(telebot.OnText, func(m *telebot.Message) {
 		log.Println(m.Text)
+		head := "[Send SMS]"
 		switch SMSSendInfoNextStatus {
 		case SMS_SEND_INFO_STANDBY_STATUS:
 			return
 		case SMS_SEND_INFO_PHONE_INPUT_STATUS:
 			if !isPhoneNumber(m.Text) {
-				botHandle.Send(m.Sender, "This phone number is invalid. Please enter it again.")
+				botHandle.Send(m.Sender, head+"This phone number is invalid. Please enter it again.")
 				break
 			}
 			SMSSendPhoneNumber = m.Text
 			SMSSendInfoNextStatus = SMS_SEND_INFO_MESSAGE_INPUT_STATUS
-			botHandle.Send(m.Sender, "Please enter the message to be sent.")
+			botHandle.Send(m.Sender, head+"Please enter the message to be sent.")
 			break
 		case SMS_SEND_INFO_MESSAGE_INPUT_STATUS:
 			doSendSMS(botHandle, m, clientOBJ, SMSSendPhoneNumber, m.Text)
