@@ -116,20 +116,18 @@ func botCommand(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig C
 				log.Fatal(err)
 			}
 		}
-		head := "[Send SMS]"
+		head := "[Send SMS]\n"
 		command := m.Text
 		commandList := strings.Split(command, "\n")
 		log.Println(len(commandList))
 		if len(commandList) <= 2 {
-			//log.Println("Command format error.")
-			//botHandle.Send(m.Sender, head+"\nFail to get information.")
 			SMSSendInfoNextStatus = SMS_SEND_INFO_PHONE_INPUT_STATUS
-			botHandle.Send(m.Sender, head+"\nPlease enter the receiver's number.")
+			botHandle.Send(m.Sender, head+"Please enter the receiver's number.")
 			return
 		}
 		if !isPhoneNumber(commandList[1]) {
 			log.Println("This is not a legal phone number.")
-			botHandle.Send(m.Sender, head+"\nThis is not a legal phone number.")
+			botHandle.Send(m.Sender, head+"This is not a legal phone number.")
 			return
 		}
 		PhoneNumber := commandList[1]
@@ -157,7 +155,7 @@ func botCommand(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig C
 
 	botHandle.Handle(telebot.OnText, func(m *telebot.Message) {
 		log.Println(m.Text)
-		head := "[Send SMS]"
+		head := "[Send SMS]\n"
 		switch SMSSendInfoNextStatus {
 		case SMS_SEND_INFO_STANDBY_STATUS:
 			return
@@ -182,7 +180,6 @@ func botCommand(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig C
 
 func doSendSMS(botHandle *telebot.Bot, m *telebot.Message, clientOBJ *client.Client, PhoneNumber string, Content string) {
 	head := "[Send SMS]"
-	log.Println(fmt.Sprintf("%s To: %s Content: %s", head, PhoneNumber, Content))
 	botHandle.Send(m.Sender, fmt.Sprintf("%s\nTo: %s\nContent: %s", head, PhoneNumber, Content))
 	_, err := clientOBJ.SendSMS(PhoneNumber, Content)
 	if err != nil {
