@@ -39,7 +39,7 @@ func main() {
 	var botHandle, err = telebot.NewBot(telebot.Settings{
 		URL:    "https://api.telegram.org",
 		Token:  SystemConfig.BotToken,
-		Poller: &telebot.LongPoller{Timeout: 10 * time.Second},
+		Poller: &telebot.LongPoller{Timeout: 50 * time.Second},
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -80,7 +80,7 @@ func receiveSMS(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig C
 				}
 			}
 		}
-		time.Sleep(5 * time.Second)
+		time.Sleep(60 * time.Second)
 	}
 
 }
