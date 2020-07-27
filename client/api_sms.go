@@ -14,6 +14,7 @@ const (
 	SMS_ERROR_STATUS  = 4
 )
 
+// SMS box type
 //goland:noinspection GoUnusedConst,GoSnakeCaseUsage
 const (
 	SMS_BOX_TYPE_LOCAL_INBOX = 1
@@ -31,11 +32,11 @@ const (
 type SMSCountResp struct {
 	BaseResp
 
-	InboxUnread  string `xml:"LocalUnread"`
-	InboxTotal   string `xml:"LocalInbox"`
-	OutboxCount  string `xml:"LocalOutbox"`
-	DraftCount   string `xml:"LocalDraft"`
-	DeletedCount string `xml:"LocalDeleted"`
+	InboxUnread  int `xml:"LocalUnread"`
+	InboxTotal   int `xml:"LocalInbox"`
+	OutboxCount  int `xml:"LocalOutbox"`
+	DraftCount   int `xml:"LocalDraft"`
+	DeletedCount int `xml:"LocalDeleted"`
 
 	// Usually "500".
 	// The max number of SMS can be stored in the device?

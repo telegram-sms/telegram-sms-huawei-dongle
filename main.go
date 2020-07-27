@@ -21,7 +21,7 @@ const SYSTEMHEAD = "[System Information]"
 type ConfigObj struct {
 	ChatId        int    `json:"chat_id"`
 	BotToken      string `json:"bot_token"`
-	DongleURL     string `json:"url"`
+	DongleURL     string `json:"dongle_url"`
 	AdminPassword string `json:"password"`
 }
 
@@ -29,30 +29,32 @@ func main() {
 
 	jsoniterObj := jsoniter.ConfigCompatibleWithStandardLibrary
 	var SystemConfig ConfigObj
-	err2 := jsoniterObj.Unmarshal(openFileByte("config.json"), &SystemConfig)
+	err2 := jsoniterObj.Unmarshal(openFile("config.json"), &SystemConfig)
 	if err2 != nil {
 		log.Fatal(err2)
 		return
 	}
 
 	log.Println("Configuration file loaded.")
-	dongleClient := getAdminClient(SystemConfig.DongleURL, SystemConfig.AdminPassword)
 
-	go receiveSMS(dongleClient, SystemConfig)
-
-	botCommand(dongleClient, SystemConfig)
-}
-
-func receiveSMS(clientOBJ *client.Client, SystemConfig ConfigObj) {
 	var botHandle, err = telebot.NewBot(telebot.Settings{
 		URL:    "https://api.telegram.org",
 		Token:  SystemConfig.BotToken,
-		Poller: &telebot.LongPoller{Timeout: 50 * time.Second},
+		Poller: &telebot.LongPoller{Timeout: 10 * time.Second},
 	})
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
+
+	dongleClient := getAdminClient(SystemConfig.DongleURL, SystemConfig.AdminPassword)
+
+	go receiveSMS(dongleClient, botHandle, SystemConfig)
+
+	botCommand(dongleClient, botHandle, SystemConfig)
+}
+
+func receiveSMS(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig ConfigObj) {
 	for {
 		if !checkLoginStatus(clientOBJ) {
 			log.Println("logout")
@@ -63,7 +65,7 @@ func receiveSMS(clientOBJ *client.Client, SystemConfig ConfigObj) {
 			log.Fatal(err)
 		}
 		log.Printf("Unread: %s\n", result.InboxUnread)
-		if result.InboxUnread != "0" {
+		if result.InboxUnread > 0 {
 			response, err := clientOBJ.SMSList(1, 50)
 			if err != nil {
 				log.Fatal(err)
@@ -84,21 +86,10 @@ func receiveSMS(clientOBJ *client.Client, SystemConfig ConfigObj) {
 
 }
 
-func botCommand(clientOBJ *client.Client, SystemConfig ConfigObj) {
-
-	CHATID := SystemConfig.ChatId
-	var botHandle, err = telebot.NewBot(telebot.Settings{
-		URL:    "https://api.telegram.org",
-		Token:  SystemConfig.BotToken,
-		Poller: &telebot.LongPoller{Timeout: 10 * time.Second},
-	})
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
+func botCommand(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig ConfigObj) {
 	botHandle.Handle("/start", func(m *telebot.Message) {
 		log.Println("/start")
-		if !checkChatState(CHATID, m) {
+		if !checkChatState(SystemConfig.ChatId, m) {
 			return
 		}
 		botHandle.Send(m.Sender, SYSTEMHEAD+"\nAvailable Commands:\n/getinfo - Get system information\n/sendsms - Send SMS")
@@ -106,7 +97,7 @@ func botCommand(clientOBJ *client.Client, SystemConfig ConfigObj) {
 
 	botHandle.Handle("/sendsms", func(m *telebot.Message) {
 		log.Println("/sendsms")
-		if !checkChatState(CHATID, m) {
+		if !checkChatState(SystemConfig.ChatId, m) {
 			return
 		}
 		if !checkLoginStatus(clientOBJ) {
@@ -143,7 +134,7 @@ func botCommand(clientOBJ *client.Client, SystemConfig ConfigObj) {
 		Content := buffer.String()
 		log.Println(fmt.Sprintf("%s To: %s Content: %s", head, PhoneNumber, Content))
 		botHandle.Send(m.Sender, fmt.Sprintf("%s\nTo: %s\nContent: %s", head, PhoneNumber, Content))
-		_, err = clientOBJ.SendSMS(PhoneNumber, Content)
+		_, err := clientOBJ.SendSMS(PhoneNumber, Content)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -151,7 +142,7 @@ func botCommand(clientOBJ *client.Client, SystemConfig ConfigObj) {
 
 	botHandle.Handle("/getinfo", func(m *telebot.Message) {
 		log.Println("/getinfo")
-		if !checkChatState(CHATID, m) {
+		if !checkChatState(SystemConfig.ChatId, m) {
 			return
 		}
 		unavailable := "Not available"
@@ -162,7 +153,7 @@ func botCommand(clientOBJ *client.Client, SystemConfig ConfigObj) {
 
 }
 
-func openFileByte(filename string) []byte {
+func openFile(filename string) []byte {
 	b, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Fatal(err)
