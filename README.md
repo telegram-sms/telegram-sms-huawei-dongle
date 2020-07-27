@@ -5,7 +5,7 @@
 > Fight COVID-19. Stay at home. Save lives.
 
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg?style=flat-square)](https://github.com/telegram-sms/telegram-sms-huawei-dongle/blob/master/LICENSE)
-[![GitHub Releases](https://img.shields.io/github/downloads/telegram-sms/telegram-sms/latest/app-release.apk?style=flat-square)](https://github.com/telegram-sms/telegram-sms-huawei-dongle/releases/latest)
+[![GitHub Releases](https://img.shields.io/github/downloads/telegram-sms/telegram-sms-huawei-dongle/latest/total?style=flat-square)](https://github.com/telegram-sms/telegram-sms-huawei-dongle/releases/latest)
 
 A robot running on your Huawei Dongle device.
 
