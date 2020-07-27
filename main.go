@@ -67,7 +67,7 @@ func receiveSMS(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig C
 		if result.InboxUnread > 0 {
 			response, err := clientOBJ.SMSList(1, 50)
 			if err != nil {
-				log.Fatal(err)
+				log.Println(err)
 			}
 			for _, item := range response.Messages {
 				if item.Status == client.SMS_UNREAD_STATUS {
