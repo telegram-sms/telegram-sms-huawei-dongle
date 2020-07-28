@@ -1,0 +1,2 @@
+- Fix the stability issue to avoid the crash caused by a single access error
+- Fix the issue of the number length of the Chat ID
