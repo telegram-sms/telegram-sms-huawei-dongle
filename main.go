@@ -197,10 +197,10 @@ func openFile(filename string) []byte {
 }
 
 func checkChatState(chatId int, m *telebot.Message) bool {
-	if !m.Private() {
-		log.Println("Request type is not allowed by security policy.")
-		return false
-	}
+	//if !m.Private() {
+	//log.Println("Request type is not allowed by security policy.")
+	//return false
+	//}
 	if chatId != m.Sender.ID {
 		log.Printf("Chat ID[%s] not allow.\n", chatId)
 		return false
