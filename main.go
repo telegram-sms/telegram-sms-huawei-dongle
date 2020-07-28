@@ -19,7 +19,7 @@ import (
 const SYSTEMHEAD = "[System Information]"
 
 type ConfigObj struct {
-	ChatId        int64  `json:"chat_id"`
+	ChatID        int64  `json:"chat_id"`
 	BotToken      string `json:"bot_token"`
 	DongleURL     string `json:"dongle_url"`
 	AdminPassword string `json:"password"`
@@ -71,7 +71,7 @@ func receiveSMS(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig C
 			for _, item := range response.Messages {
 				if item.Status == client.SMS_UNREAD_STATUS {
 					message := fmt.Sprintf("[Receive SMS]\nFrom: %s\nContent: %s\nDate: %s", item.Phone, item.Content, item.Date)
-					botHandle.Send(telebot.ChatID(SystemConfig.ChatId), message, &telebot.SendOptions{DisableWebPagePreview: true})
+					botHandle.Send(telebot.ChatID(SystemConfig.ChatID), message, &telebot.SendOptions{DisableWebPagePreview: true})
 					messageID, _ := strconv.ParseInt(item.MessageID, 10, 64)
 					clientOBJ.SetRead(messageID)
 				} else {
@@ -96,22 +96,22 @@ func botCommand(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig C
 
 	botHandle.Handle("/start", func(m *telebot.Message) {
 		SMSSendInfoNextStatus = SMS_SEND_INFO_STANDBY_STATUS
-		if !checkChatState(SystemConfig.ChatId, m) {
+		if !checkChatState(SystemConfig.ChatID, m) {
 			return
 		}
-		botHandle.Send(m.Sender, SYSTEMHEAD+"\nAvailable Commands:\n/getinfo - Get system information\n/sendsms - Send SMS")
+		botHandle.Send(telebot.ChatID(SystemConfig.ChatID), SYSTEMHEAD+"\nAvailable Commands:\n/getinfo - Get system information\n/sendsms - Send SMS")
 	})
 
 	botHandle.Handle("/sendsms", func(m *telebot.Message) {
 		SMSSendInfoNextStatus = SMS_SEND_INFO_STANDBY_STATUS
-		if !checkChatState(SystemConfig.ChatId, m) {
+		if !checkChatState(SystemConfig.ChatID, m) {
 			return
 		}
 		if !checkLoginStatus(clientOBJ) {
 			log.Println("Login status check failed")
 			err := clientOBJ.UpdateSession()
 			if err != nil {
-				botHandle.Send(m.Sender, "Unable to update login session information.")
+				botHandle.Send(telebot.ChatID(SystemConfig.ChatID), "Unable to update login session information.")
 				log.Fatal(err)
 			}
 		}
@@ -121,12 +121,12 @@ func botCommand(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig C
 		log.Println(len(commandList))
 		if len(commandList) <= 2 {
 			SMSSendInfoNextStatus = SMS_SEND_INFO_PHONE_INPUT_STATUS
-			botHandle.Send(m.Sender, head+"Please enter the receiver's number.")
+			botHandle.Send(telebot.ChatID(SystemConfig.ChatID), head+"Please enter the receiver's number.")
 			return
 		}
 		if !isPhoneNumber(commandList[1]) {
 			log.Println("This is not a legal phone number.")
-			botHandle.Send(m.Sender, head+"This is not a legal phone number.")
+			botHandle.Send(telebot.ChatID(SystemConfig.ChatID), head+"This is not a legal phone number.")
 			return
 		}
 		PhoneNumber := commandList[1]
@@ -139,17 +139,17 @@ func botCommand(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig C
 			buffer.WriteString(commandList[i-1])
 		}
 		Content := buffer.String()
-		doSendSMS(botHandle, m, clientOBJ, PhoneNumber, Content)
+		doSendSMS(botHandle, clientOBJ, SystemConfig.ChatID, PhoneNumber, Content)
 	})
 
 	botHandle.Handle("/getinfo", func(m *telebot.Message) {
 		SMSSendInfoNextStatus = SMS_SEND_INFO_STANDBY_STATUS
-		if !checkChatState(SystemConfig.ChatId, m) {
+		if !checkChatState(SystemConfig.ChatID, m) {
 			return
 		}
 		unavailable := "Not available"
 		response := fmt.Sprintf("%s\nBattery Level: %s\nNetwork status: %s\nSIM: %s", SYSTEMHEAD, unavailable, unavailable, unavailable)
-		botHandle.Send(m.Sender, response)
+		botHandle.Send(m.Chat, response)
 	})
 
 	botHandle.Handle(telebot.OnText, func(m *telebot.Message) {
@@ -160,15 +160,15 @@ func botCommand(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig C
 			return
 		case SMS_SEND_INFO_PHONE_INPUT_STATUS:
 			if !isPhoneNumber(m.Text) {
-				botHandle.Send(m.Sender, head+"This phone number is invalid. Please enter it again.")
+				botHandle.Send(telebot.ChatID(SystemConfig.ChatID), head+"This phone number is invalid. Please enter it again.")
 				break
 			}
 			SMSSendPhoneNumber = m.Text
 			SMSSendInfoNextStatus = SMS_SEND_INFO_MESSAGE_INPUT_STATUS
-			botHandle.Send(m.Sender, head+"Please enter the message to be sent.")
+			botHandle.Send(telebot.ChatID(SystemConfig.ChatID), head+"Please enter the message to be sent.")
 			break
 		case SMS_SEND_INFO_MESSAGE_INPUT_STATUS:
-			doSendSMS(botHandle, m, clientOBJ, SMSSendPhoneNumber, m.Text)
+			doSendSMS(botHandle, clientOBJ, SystemConfig.ChatID, SMSSendPhoneNumber, m.Text)
 			break
 		}
 		return
@@ -177,9 +177,9 @@ func botCommand(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig C
 
 }
 
-func doSendSMS(botHandle *telebot.Bot, m *telebot.Message, clientOBJ *client.Client, PhoneNumber string, Content string) {
+func doSendSMS(botHandle *telebot.Bot, clientOBJ *client.Client, chatID int64, PhoneNumber string, Content string) {
 	head := "[Send SMS]"
-	botHandle.Send(m.Sender, fmt.Sprintf("%s\nTo: %s\nContent: %s", head, PhoneNumber, Content))
+	botHandle.Send(telebot.ChatID(chatID), fmt.Sprintf("%s\nTo: %s\nContent: %s", head, PhoneNumber, Content))
 	_, err := clientOBJ.SendSMS(PhoneNumber, Content)
 	if err != nil {
 		log.Fatal(err)
