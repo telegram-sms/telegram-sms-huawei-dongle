@@ -5,7 +5,8 @@
 > Fight COVID-19. Stay at home. Save lives.
 
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg?style=flat-square)](https://github.com/telegram-sms/telegram-sms-huawei-dongle/blob/master/LICENSE)
-[![GitHub Releases](https://img.shields.io/github/downloads/telegram-sms/telegram-sms/latest/app-release.apk?style=flat-square)](https://github.com/telegram-sms/telegram-sms-huawei-dongle/releases/latest)
+[![GitHub Releases](https://img.shields.io/github/downloads/telegram-sms/telegram-sms-huawei-dongle/latest/total?style=flat-square)](https://github.com/telegram-sms/telegram-sms-huawei-dongle/releases/latest)
+
 A robot running on your Huawei Dongle device.
 
 The primary language used for commit messages is Simplified Chinese. However, you're welcome to use English in commit messages when making contributions.
@@ -18,7 +19,7 @@ You can follow the Telegram channel [Telegram SMS 更新日志](https://t.me/tg_
 
 **Warning**: All versions are not compatible (not signed by the same key)! You will have to uninstall one to install the other, which will delete all your data.
 
-[Latest Release Download](https://github.com/telegram-sms/telegram-sms/releases/latest)
+[Latest Release Download](https://github.com/telegram-sms/telegram-sms-huawei-dongle/releases/latest)
 
 **No warranty expressed or implied. Use at your own risk. You have been warned.**
 
