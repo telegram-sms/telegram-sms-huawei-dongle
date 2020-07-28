@@ -32,7 +32,7 @@ build:
         - GOOS=windows GOARCH=amd64 go build -o ./releases/telegram-sms-huawei-windows-amd64
         - GOOS=linux GOARCH=amd64 go build -o ./releases/telegram-sms-huawei-linux-amd64
         - GOOS=linux GOARCH=arm go build -o ./releases/telegram-sms-huawei-linux-arm
-        - GOOS=linux GOARCH=arm64 go build -o ./releases/telegram-sms-huawei-windows-arm64
+        - GOOS=linux GOARCH=arm64 go build -o ./releases/telegram-sms-huawei-linux-arm64
     artifacts:
         paths:
             - releases/

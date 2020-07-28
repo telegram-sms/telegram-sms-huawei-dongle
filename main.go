@@ -29,10 +29,9 @@ func main() {
 
 	jsoniterObj := jsoniter.ConfigCompatibleWithStandardLibrary
 	var SystemConfig ConfigObj
-	err2 := jsoniterObj.Unmarshal(openFile("config.json"), &SystemConfig)
-	if err2 != nil {
-		log.Fatal(err2)
-		return
+	errLoadingJson := jsoniterObj.Unmarshal(openFile("config.json"), &SystemConfig)
+	if errLoadingJson != nil {
+		log.Fatal(errLoadingJson)
 	}
 
 	log.Println("Configuration file loaded.")
@@ -43,7 +42,6 @@ func main() {
 	})
 	if err != nil {
 		log.Fatal(err)
-		return
 	}
 
 	adminClient := getAdminClient(SystemConfig.DongleURL, SystemConfig.AdminPassword)
@@ -68,11 +66,12 @@ func receiveSMS(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig C
 			response, err := clientOBJ.SMSList(1, 50)
 			if err != nil {
 				log.Println(err)
+				log.Println(response)
 			}
 			for _, item := range response.Messages {
 				if item.Status == client.SMS_UNREAD_STATUS {
 					message := fmt.Sprintf("[Receive SMS]\nFrom: %s\nContent: %s\nDate: %s", item.Phone, item.Content, item.Date)
-					botHandle.Send(telebot.ChatID(SystemConfig.ChatId), message)
+					botHandle.Send(telebot.ChatID(SystemConfig.ChatId), message, &telebot.SendOptions{DisableWebPagePreview: true})
 					messageID, _ := strconv.ParseInt(item.MessageID, 10, 64)
 					clientOBJ.SetRead(messageID)
 				} else {
@@ -215,11 +214,10 @@ func isPhoneNumber(number string) bool {
 func checkLoginStatus(dongleClient *client.Client) bool {
 	login, err := dongleClient.GetLoginState()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 		return false
 	}
 	if login.IsLoggedIn() {
-		//log.Println("Huawei dongle login detected.")
 		return true
 	}
 	return false
