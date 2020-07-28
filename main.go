@@ -19,7 +19,7 @@ import (
 const SYSTEMHEAD = "[System Information]"
 
 type ConfigObj struct {
-	ChatId        int    `json:"chat_id"`
+	ChatId        int64  `json:"chat_id"`
 	BotToken      string `json:"bot_token"`
 	DongleURL     string `json:"dongle_url"`
 	AdminPassword string `json:"password"`
@@ -195,13 +195,13 @@ func openFile(filename string) []byte {
 	return b
 }
 
-func checkChatState(chatId int, m *telebot.Message) bool {
+func checkChatState(chatId int64, m *telebot.Message) bool {
 	if !m.Private() {
 		log.Println("Request type is not allowed by security policy.")
 		return false
 	}
-	if chatId != m.Sender.ID {
-		log.Printf("Chat ID[%s] not allow.\n", chatId)
+	if chatId != m.Chat.ID {
+		log.Printf("Chat ID[%s] not allow.\n", strconv.FormatInt(m.Chat.ID, 10))
 		return false
 	}
 	return true
