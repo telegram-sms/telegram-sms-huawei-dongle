@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/telegram-sms/telegram-sms-huawei-dongle/client"
 	"io/ioutil"
@@ -10,8 +11,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/json-iterator/go"
 
 	"gopkg.in/tucnak/telebot.v2"
 )
@@ -30,9 +29,8 @@ type ConfigObj struct {
 
 func main() {
 
-	jsoniterObj := jsoniter.ConfigCompatibleWithStandardLibrary
 	var SystemConfig ConfigObj
-	errLoadingJson := jsoniterObj.Unmarshal(openFile("config.json"), &SystemConfig)
+	errLoadingJson := json.Unmarshal(openFile("config.json"), &SystemConfig)
 	if errLoadingJson != nil {
 		log.Fatal(errLoadingJson)
 	}
