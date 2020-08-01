@@ -18,6 +18,9 @@ import (
 
 const SYSTEMHEAD = "[System Information]"
 
+//goland:noinspection GoSnakeCaseUsage
+var G_adminClient *client.Client
+
 type ConfigObj struct {
 	ChatID        int64  `json:"chat_id"`
 	BotToken      string `json:"bot_token"`
@@ -44,26 +47,30 @@ func main() {
 		log.Fatal(err)
 	}
 
-	adminClient := getAdminClient(SystemConfig.DongleURL, SystemConfig.AdminPassword)
+	G_adminClient = getAdminClient(SystemConfig.DongleURL, SystemConfig.AdminPassword)
 
-	go receiveSMS(adminClient, botHandle, SystemConfig)
+	login, err := G_adminClient.GetLoginState()
+	if err != nil {
+		log.Fatal("Login to Huawei Dongle failed. Please check the connection.")
+	}
+	if login.IsLoggedIn() {
+		log.Println("Login to Huawei Dongle successfully.")
+	}
+	go receiveSMS(botHandle, SystemConfig)
 
-	botCommand(adminClient, botHandle, SystemConfig)
+	botCommand(botHandle, SystemConfig)
 }
 
-func receiveSMS(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig ConfigObj) {
+func receiveSMS(botHandle *telebot.Bot, SystemConfig ConfigObj) {
 	for {
-		if !checkLoginStatus(clientOBJ) {
-			log.Println("logout")
-			return
-		}
-		result, err := clientOBJ.SMSCount()
+		renewAdminClient(SystemConfig)
+		result, err := G_adminClient.SMSCount()
 		if err != nil {
 			log.Fatal(err)
 		}
 		log.Printf("Unread: %s\n", strconv.Itoa(result.InboxUnread))
 		if result.InboxUnread > 0 {
-			response, err := clientOBJ.SMSList(1, 50)
+			response, err := G_adminClient.SMSList(1, 50)
 			if err != nil {
 				log.Println(err)
 				log.Println(response)
@@ -73,7 +80,7 @@ func receiveSMS(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig C
 					message := fmt.Sprintf("[Receive SMS]\nFrom: %s\nContent: %s\nDate: %s", item.Phone, item.Content, item.Date)
 					botHandle.Send(telebot.ChatID(SystemConfig.ChatID), message, &telebot.SendOptions{DisableWebPagePreview: true})
 					messageID, _ := strconv.ParseInt(item.MessageID, 10, 64)
-					clientOBJ.SetRead(messageID)
+					G_adminClient.SetRead(messageID)
 				} else {
 					//log.Println("The message has been read, skip it.")
 				}
@@ -84,7 +91,7 @@ func receiveSMS(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig C
 
 }
 
-func botCommand(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig ConfigObj) {
+func botCommand(botHandle *telebot.Bot, SystemConfig ConfigObj) {
 	var SMSSendInfoNextStatus = -1
 	var SMSSendPhoneNumber = ""
 	//goland:noinspection GoUnusedConst,GoSnakeCaseUsage
@@ -107,14 +114,7 @@ func botCommand(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig C
 		if !checkChatState(SystemConfig.ChatID, m) {
 			return
 		}
-		if !checkLoginStatus(clientOBJ) {
-			log.Println("Login status check failed")
-			err := clientOBJ.UpdateSession()
-			if err != nil {
-				botHandle.Send(telebot.ChatID(SystemConfig.ChatID), "Unable to update login session information.")
-				log.Fatal(err)
-			}
-		}
+		renewAdminClient(SystemConfig)
 		head := "[Send SMS]\n"
 		command := m.Text
 		commandList := strings.Split(command, "\n")
@@ -139,7 +139,7 @@ func botCommand(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig C
 			buffer.WriteString(commandList[i-1])
 		}
 		Content := buffer.String()
-		doSendSMS(botHandle, clientOBJ, SystemConfig.ChatID, PhoneNumber, Content)
+		doSendSMS(botHandle, G_adminClient, SystemConfig.ChatID, PhoneNumber, Content)
 	})
 
 	botHandle.Handle("/getinfo", func(m *telebot.Message) {
@@ -147,6 +147,7 @@ func botCommand(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig C
 		if !checkChatState(SystemConfig.ChatID, m) {
 			return
 		}
+		renewAdminClient(SystemConfig)
 		unavailable := "Not available"
 		response := fmt.Sprintf("%s\nBattery Level: %s\nNetwork status: %s\nSIM: %s", SYSTEMHEAD, unavailable, unavailable, unavailable)
 		botHandle.Send(m.Chat, response)
@@ -168,7 +169,7 @@ func botCommand(clientOBJ *client.Client, botHandle *telebot.Bot, SystemConfig C
 			botHandle.Send(telebot.ChatID(SystemConfig.ChatID), head+"Please enter the message to be sent.")
 			break
 		case SMS_SEND_INFO_MESSAGE_INPUT_STATUS:
-			doSendSMS(botHandle, clientOBJ, SystemConfig.ChatID, SMSSendPhoneNumber, m.Text)
+			doSendSMS(botHandle, G_adminClient, SystemConfig.ChatID, SMSSendPhoneNumber, m.Text)
 			break
 		}
 		return
@@ -211,16 +212,14 @@ func isPhoneNumber(number string) bool {
 	return re.MatchString(number)
 }
 
-func checkLoginStatus(dongleClient *client.Client) bool {
-	login, err := dongleClient.GetLoginState()
+func renewAdminClient(SystemConfig ConfigObj) {
+	login, err := G_adminClient.GetLoginState()
 	if err != nil {
-		log.Println(err)
-		return false
+		log.Print(err)
 	}
-	if login.IsLoggedIn() {
-		return true
+	if !login.IsLoggedIn() {
+		G_adminClient = getAdminClient(SystemConfig.DongleURL, SystemConfig.AdminPassword)
 	}
-	return false
 }
 
 func getAdminClient(dongleURL string, password string) *client.Client {
