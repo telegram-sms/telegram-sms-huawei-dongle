@@ -74,7 +74,7 @@ func receiveSMS(botHandle *telebot.Bot, SystemConfig ConfigObj) {
 			}
 			for _, item := range response.Messages {
 				if item.Status == client.SMS_UNREAD_STATUS {
-					message := fmt.Sprintf("[Receive SMS]\nFrom: %s\nContent: %s\nDate: %s", item.Phone, item.Content, item.Date)
+					message := fmt.Sprintf("[Receive SMS]\nFrom: %s\nDate: %sContent: %s\n", item.Phone, item.Date, item.Content)
 					botHandle.Send(telebot.ChatID(SystemConfig.ChatID), message, &telebot.SendOptions{DisableWebPagePreview: true})
 					messageID, _ := strconv.ParseInt(item.MessageID, 10, 64)
 					G_adminClient.SetRead(messageID)
