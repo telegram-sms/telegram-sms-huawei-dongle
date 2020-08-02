@@ -15,7 +15,8 @@ import (
 	"gopkg.in/tucnak/telebot.v2"
 )
 
-const SYSTEMHEAD = "[System Information]"
+//goland:noinspection GoSnakeCaseUsage
+const SYSTEM_HEAD = "[System Information]"
 
 //goland:noinspection GoSnakeCaseUsage
 var G_adminClient *client.Client
@@ -28,7 +29,6 @@ type ConfigObj struct {
 }
 
 func main() {
-
 	var SystemConfig ConfigObj
 	errLoadingJson := json.Unmarshal(openFile("config.json"), &SystemConfig)
 	if errLoadingJson != nil {
@@ -71,7 +71,6 @@ func receiveSMS(botHandle *telebot.Bot, SystemConfig ConfigObj) {
 			response, err := G_adminClient.SMSList(1, 50)
 			if err != nil {
 				log.Println(err)
-				log.Println(response)
 			}
 			for _, item := range response.Messages {
 				if item.Status == client.SMS_UNREAD_STATUS {
@@ -79,8 +78,6 @@ func receiveSMS(botHandle *telebot.Bot, SystemConfig ConfigObj) {
 					botHandle.Send(telebot.ChatID(SystemConfig.ChatID), message, &telebot.SendOptions{DisableWebPagePreview: true})
 					messageID, _ := strconv.ParseInt(item.MessageID, 10, 64)
 					G_adminClient.SetRead(messageID)
-				} else {
-					//log.Println("The message has been read, skip it.")
 				}
 			}
 		}
@@ -104,7 +101,7 @@ func botCommand(botHandle *telebot.Bot, SystemConfig ConfigObj) {
 		if !checkChatState(SystemConfig.ChatID, m) {
 			return
 		}
-		botHandle.Send(telebot.ChatID(SystemConfig.ChatID), SYSTEMHEAD+"\nAvailable Commands:\n/getinfo - Get system information\n/sendsms - Send SMS")
+		botHandle.Send(telebot.ChatID(SystemConfig.ChatID), SYSTEM_HEAD+"\nAvailable Commands:\n/getinfo - Get system information\n/sendsms - Send SMS")
 	})
 
 	botHandle.Handle("/sendsms", func(m *telebot.Message) {
@@ -147,7 +144,7 @@ func botCommand(botHandle *telebot.Bot, SystemConfig ConfigObj) {
 		}
 		renewAdminClient(SystemConfig)
 		unavailable := "Not available"
-		response := fmt.Sprintf("%s\nBattery Level: %s\nNetwork status: %s\nSIM: %s", SYSTEMHEAD, unavailable, unavailable, unavailable)
+		response := fmt.Sprintf("%s\nBattery Level: %s\nNetwork status: %s\nSIM: %s", SYSTEM_HEAD, unavailable, unavailable, unavailable)
 		botHandle.Send(m.Chat, response)
 	})
 
