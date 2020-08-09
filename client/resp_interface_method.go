@@ -35,3 +35,7 @@ func (r *SMSSendResp) setTagName(tagName string) {
 func (r *SMSSendStatusResp) setTagName(tagName string) {
 	r.XMLName.Local = tagName
 }
+
+func (r *MonitorStatusResp) setTagName(tagName string) {
+	r.XMLName.Local = tagName
+}
