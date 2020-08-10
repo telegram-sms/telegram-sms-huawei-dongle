@@ -74,7 +74,7 @@ func receiveSMS(botHandle *telebot.Bot, SystemConfig ConfigObj) {
 			}
 			for _, item := range response.Messages {
 				if item.Status == client.SMS_UNREAD_STATUS {
-					message := fmt.Sprintf("[Receive SMS]\nFrom: %s\nDate: %sContent: %s\n", item.Phone, item.Date, item.Content)
+					message := fmt.Sprintf("[Receive SMS]\nFrom: %s\nDate: %s\nContent: %s\n", item.Phone, item.Date, item.Content)
 					botHandle.Send(telebot.ChatID(SystemConfig.ChatID), message, &telebot.SendOptions{DisableWebPagePreview: true})
 					messageID, _ := strconv.ParseInt(item.MessageID, 10, 64)
 					G_adminClient.SetRead(messageID)
@@ -144,11 +144,35 @@ func botCommand(botHandle *telebot.Bot, SystemConfig ConfigObj) {
 		}
 		renewAdminClient(SystemConfig)
 		unavailable := "Not available"
-		response := fmt.Sprintf("%s\nBattery Level: %s\nNetwork status: %s\nSIM: %s", SYSTEM_HEAD, unavailable, unavailable, unavailable)
+		batteryLevel := unavailable
+		status, err := G_adminClient.GetDeviceStatus()
+		if err != nil {
+			log.Print(err)
+		}
+		if status.HasBattery() {
+			batteryLevel = fmt.Sprintf("%s%", status.BatteryPercent)
+		}
+		currentNetworkType := unavailable
+		switch status.CurrentNetworkType {
+		case client.TYPE_NOSERVICE:
+			break
+		case client.TYPE_GPRS:
+		case client.TYPE_EDGE:
+			currentNetworkType = "2G"
+			break
+		case client.TYPE_LTE:
+			currentNetworkType = "LTE"
+			break
+		default:
+			currentNetworkType = "3G"
+			break
+		}
+		response := fmt.Sprintf("%s\nBattery Level: %s\nNetwork status: %s\nSIM: %s", SYSTEM_HEAD, batteryLevel, currentNetworkType, unavailable)
 		botHandle.Send(m.Chat, response)
 	})
 
 	botHandle.Handle(telebot.OnText, func(m *telebot.Message) {
+		log.Println(m.Text)
 		log.Println(m.Text)
 		head := "[Send SMS]\n"
 		switch SMSSendInfoNextStatus {
