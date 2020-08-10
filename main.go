@@ -150,7 +150,7 @@ func botCommand(botHandle *telebot.Bot, SystemConfig ConfigObj) {
 			log.Print(err)
 		}
 		if status.HasBattery() {
-			batteryLevel = fmt.Sprintf("%s%", status.BatteryPercent)
+			batteryLevel = strconv.FormatInt(status.BatteryPercent.Int64, 10)
 		}
 		currentNetworkType := unavailable
 		switch status.CurrentNetworkType {
@@ -167,7 +167,7 @@ func botCommand(botHandle *telebot.Bot, SystemConfig ConfigObj) {
 			currentNetworkType = "3G"
 			break
 		}
-		response := fmt.Sprintf("%s\nBattery Level: %s\nNetwork status: %s\nSIM: %s", SYSTEM_HEAD, batteryLevel, currentNetworkType, unavailable)
+		response := fmt.Sprintf("%s\nBattery Level: %s\nNetwork status: %s\nSIM: %s", SYSTEM_HEAD, batteryLevel+"%", currentNetworkType, unavailable)
 		botHandle.Send(m.Chat, response)
 	})
 
