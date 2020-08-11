@@ -164,7 +164,12 @@ func botCommand(botHandle *telebot.Bot, SystemConfig ConfigObj) {
 			currentNetworkType = "LTE"
 			break
 		default:
-			currentNetworkType = "3G"
+			if status.CurrentNetworkType < client.TYPE_LTE {
+				currentNetworkType = "3G"
+			} else {
+				currentNetworkType = "Unknown"
+			}
+
 			break
 		}
 		response := fmt.Sprintf("%s\nBattery Level: %s\nNetwork status: %s\nSIM: %s", SYSTEM_HEAD, batteryLevel+"%", currentNetworkType, unavailable)
