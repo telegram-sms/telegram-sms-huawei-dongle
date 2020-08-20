@@ -149,8 +149,8 @@ func botCommand(botHandle *telebot.Bot, SystemConfig ConfigObj) {
 		if err != nil {
 			log.Print(err)
 		}
-		if status.HasBattery() {
-			batteryLevel = strconv.FormatInt(status.BatteryPercent.Int64, 10)
+		if status.BatteryStatus != "" {
+			batteryLevel = strconv.FormatInt(status.BatteryPercent.Int64, 10) + "%"
 		}
 		currentNetworkType := unavailable
 		switch status.CurrentNetworkType {
@@ -169,10 +169,15 @@ func botCommand(botHandle *telebot.Bot, SystemConfig ConfigObj) {
 			} else {
 				currentNetworkType = "Unknown"
 			}
-
 			break
 		}
-		response := fmt.Sprintf("%s\nBattery Level: %s\nNetwork status: %s\nSIM: %s", SYSTEM_HEAD, batteryLevel+"%", currentNetworkType, unavailable)
+		PLMN, err := G_adminClient.GetNetworkPLMN()
+		networkPLMN := "Unknown"
+		if err != nil {
+			log.Println(err)
+			networkPLMN = PLMN.FullName
+		}
+		response := fmt.Sprintf("%s\nBattery Level: %s\nNetwork status: %s\nSIM: %s", SYSTEM_HEAD, batteryLevel, currentNetworkType, networkPLMN)
 		botHandle.Send(m.Chat, response)
 	})
 

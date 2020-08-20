@@ -7,6 +7,7 @@ import (
 	"github.com/telegram-sms/telegram-sms-huawei-dongle/client/cookiejar"
 	"github.com/telegram-sms/telegram-sms-huawei-dongle/client/fifo"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 )
@@ -85,7 +86,7 @@ func (c *Client) API(path string, body interface{}, resp interface{}, opt Reques
 	if err != nil {
 		return fmt.Errorf("failed to make request: %w", err)
 	}
-	//log.Printf("xml.resp: %s\n", respBytes)
+	log.Printf("xml.resp: %s\n", respBytes)
 
 	return parseResp(respBytes, resp)
 }

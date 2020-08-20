@@ -119,6 +119,24 @@ type MonitorStatusResp struct {
 	UsbUP     zero.Int `xml:"usbup"`
 }
 
+type NetworkPLMNResponse struct {
+	BaseResp
+
+	State     string `xml:"State"`
+	FullName  string `xml:"FullName"`
+	ShortName string `xml:"ShortName"`
+	Numeric   int    `xml:"Numeric"`
+	Rat       int    `xml:"Rat"`
+	Spn       string `xml:"Spn"`
+}
+
+func (c *Client) GetNetworkPLMN() (*NetworkPLMNResponse, error) {
+	//todo
+	resp := &NetworkPLMNResponse{}
+	err := c.API("/net/current-plmn", nil, resp, nil)
+	return resp, err
+}
+
 func (c *Client) GetDeviceStatus() (*MonitorStatusResp, error) {
 	resp := &MonitorStatusResp{}
 	err := c.API("/monitoring/status", nil, resp, nil)
