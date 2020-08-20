@@ -119,14 +119,6 @@ type MonitorStatusResp struct {
 	UsbUP     zero.Int `xml:"usbup"`
 }
 
-func (r *MonitorStatusResp) HasBattery() bool {
-	return r.BatteryStatus != ""
-}
-
-func (r *MonitorStatusResp) IsLTE() bool {
-	return r.CurrentNetworkType == TYPE_LTE
-}
-
 func (c *Client) GetDeviceStatus() (*MonitorStatusResp, error) {
 	resp := &MonitorStatusResp{}
 	err := c.API("/monitoring/status", nil, resp, nil)
