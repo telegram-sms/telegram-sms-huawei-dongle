@@ -175,6 +175,7 @@ func botCommand(botHandle *telebot.Bot, SystemConfig ConfigObj) {
 		networkPLMN := "Unknown"
 		if err != nil {
 			log.Println(err)
+		} else {
 			networkPLMN = PLMN.FullName
 		}
 		response := fmt.Sprintf("%s\nBattery Level: %s\nNetwork status: %s\nSIM: %s", SYSTEM_HEAD, batteryLevel, currentNetworkType, networkPLMN)
