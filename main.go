@@ -74,6 +74,10 @@ func receiveSMS(botHandle *telebot.Bot, SystemConfig ConfigObj) {
 			}
 			for _, item := range response.Messages {
 				if item.Status == client.SMS_UNREAD_STATUS {
+					if item.SmsType == 5 {
+						//MMS
+						continue
+					}
 					message := fmt.Sprintf("[Receive SMS]\nFrom: %s\nDate: %s\nContent: %s\n", item.Phone, item.Date, item.Content)
 					botHandle.Send(telebot.ChatID(SystemConfig.ChatID), message, &telebot.SendOptions{DisableWebPagePreview: true})
 					messageID, _ := strconv.ParseInt(item.MessageID, 10, 64)
@@ -188,6 +192,7 @@ func botCommand(botHandle *telebot.Bot, SystemConfig ConfigObj) {
 		head := "[Send SMS]\n"
 		switch SMSSendInfoNextStatus {
 		case SMS_SEND_INFO_STANDBY_STATUS:
+			log.Println("Get message standby state")
 			return
 		case SMS_SEND_INFO_PHONE_INPUT_STATUS:
 			if !isPhoneNumber(m.Text) {
