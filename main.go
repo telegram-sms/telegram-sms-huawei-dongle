@@ -78,6 +78,7 @@ func receiveSMS(botHandle *telebot.Bot, SystemConfig ConfigObj) {
 						//MMS
 						messageID, _ := strconv.ParseInt(item.MessageID, 10, 64)
 						G_adminClient.SetRead(messageID)
+						time.Sleep(time.Second * 5)
 						continue
 					}
 					message := fmt.Sprintf("[Receive SMS]\nFrom: %s\nDate: %s\nContent: %s\n", item.Phone, item.Date, item.Content)
