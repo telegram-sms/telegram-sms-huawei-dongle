@@ -6,7 +6,7 @@ stages:
 variables:
     OWNER: telegram-sms
     REPO: telegram-sms-huawei-dongle
-    KEYSTORE_SERVER: keystore.reallserver.cn
+    KEYSTORE_SERVER: keystore.git.reallct.uk
 
 release_github:
     stage: push
