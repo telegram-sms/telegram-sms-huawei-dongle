@@ -88,7 +88,7 @@ func receiveSMS(botHandle *telebot.Bot, SystemConfig ConfigObj) {
 				}
 			}
 		}
-		time.Sleep(60 * time.Second)
+		time.Sleep(10 * time.Second)
 	}
 
 }
